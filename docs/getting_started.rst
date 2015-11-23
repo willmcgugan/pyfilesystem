@@ -14,9 +14,9 @@ Or to upgrade to the most recent version::
 
 	pip install fs --upgrade
 
-You can also install the cutting edge release by checking out the source via SVN::
+You can also install the cutting edge release by checking out the source via GIT::
 
-    svn checkout https://github.com/PyFilesystem/pyfilesystem.git pyfilesystem-read-only
+    git clone https://github.com/PyFilesystem/pyfilesystem.git pyfilesystem-read-only
     cd pyfilesystem-read-only
     python setup.py install
 
