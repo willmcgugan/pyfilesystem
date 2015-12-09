@@ -164,7 +164,7 @@ class OSFS(OSFSXAttrMixin, OSFSWatchMixin, FS):
 
     def getsyspath(self, path, allow_none=False):
         self.validatepath(path)
-        path = relpath(normpath(path)).replace("/", os.sep)
+        path = relpath(normpath(path)).replace(u"/", os.sep)
         path = os.path.join(self.root_path, path)
         if not path.startswith(self.root_path):
             raise PathError(path, msg="OSFS given path outside root: %(path)s")
