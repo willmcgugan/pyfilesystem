@@ -547,6 +547,8 @@ class FS(object):
         :param files_only: only retrieve files
         :type files_only: bool
 
+        :rtype: list of tuples (unicode string, dict)
+
         :raises `fs.errors.ParentDirectoryMissingError`: if an intermediate
             directory is missing
         :raises `fs.errors.ResourceInvalidError`: if the path exists, but is
