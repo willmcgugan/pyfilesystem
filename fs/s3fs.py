@@ -1,8 +1,7 @@
+from __future__ import unicode_literals
 """
 fs.s3fs
 =======
-
-**Currently only avaiable on Python2 due to boto not being available for Python3**
 
 FS subclass accessing files in Amazon S3
 
@@ -106,8 +105,6 @@ class S3FS(FS):
             prefix = prefix[1:]
         if not prefix.endswith(separator) and prefix != "":
             prefix = prefix + separator
-        if isinstance(prefix,unicode):
-            prefix = prefix.encode("utf8")
         if aws_access_key is None:
             if "AWS_ACCESS_KEY_ID" not in os.environ:
                 raise CreateFailedError("AWS_ACCESS_KEY_ID not set")
@@ -179,8 +176,6 @@ class S3FS(FS):
         s3path = self._prefix + path
         if s3path and s3path[-1] == self._separator:
             s3path = s3path[:-1]
-        if isinstance(s3path,unicode):
-            s3path = s3path.encode("utf8")
         return s3path
 
     def _uns3path(self,s3path,roots3path=None):
@@ -398,8 +393,6 @@ class S3FS(FS):
             # Skip over the entry for the directory itself, if it exists
             name = self._uns3path(k.name,s3path)
             if name != "":
-                if not isinstance(name,unicode):
-                    name = name.decode("utf8")
                 if name.endswith(self._separator):
                     name = name[:-1]
                 yield (name,k)
@@ -579,8 +572,6 @@ class S3FS(FS):
             info['size'] = int(key.size)
         etag = getattr(key,"etag",None)
         if etag is not None:
-            if isinstance(etag,unicode):
-               etag = etag.encode("utf8")
             info['etag'] = etag.strip('"').strip("'")
         if hasattr(key,"last_modified"):
             # TODO: does S3 use any other formats?
@@ -663,8 +654,6 @@ class S3FS(FS):
             for k in self._s3bukt.list(prefix=prefix):
                 name = relpath(self._uns3path(k.name,prefix))
                 if name != "":
-                    if not isinstance(name,unicode):
-                        name = name.decode("utf8")
                     if not k.name.endswith(self._separator):
                         if wildcard is not None:
                             if callable(wildcard):
@@ -691,8 +680,6 @@ class S3FS(FS):
             for k in self._s3bukt.list(prefix=prefix):
                 name = relpath(self._uns3path(k.name,prefix))
                 if name != "":
-                    if not isinstance(name,unicode):
-                        name = name.decode("utf8")
                     if wildcard is not None:
                         if callable(wildcard):
                             if not wildcard(basename(name)):
@@ -718,8 +705,6 @@ class S3FS(FS):
             for k in self._s3bukt.list(prefix=prefix):
                 name = relpath(self._uns3path(k.name,prefix))
                 if name != "":
-                    if not isinstance(name,unicode):
-                        name = name.decode("utf8")
                     if not k.name.endswith(self._separator):
                         if wildcard is not None:
                             if callable(wildcard):
@@ -745,4 +730,3 @@ def _startswith_utf8(name1,name2):
     if isinstance(name2,unicode):
         name2 = name2.encode("utf8")
     return name1.startswith(name2)
-
