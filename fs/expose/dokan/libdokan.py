@@ -75,12 +75,13 @@ class BY_HANDLE_FILE_INFORMATION(Structure):
 
 class DOKAN_OPTIONS(Structure):
     _fields_ = [
-	("DriveLetter", WCHAR),
-	("ThreadCount", USHORT),
-	("Options", ULONG),
-	("GlobalContext", ULONG64),
+    ("Version", USHORT),
+    ("MountPoint", LPCWSTR),
+    ("ThreadCount", USHORT),
+    ("Options", ULONG),
+    ("GlobalContext", ULONG64),
+    ("Timeout", ULONG)
     ]
-
 
 class DOKAN_FILE_INFO(Structure):
     _fields_ = [
