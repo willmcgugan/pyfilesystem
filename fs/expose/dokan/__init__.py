@@ -848,21 +848,14 @@ def _errno2syserrcode(eno):
     return eno
 
 
-def _normalise_drive_string(drive):
+def _check_drive_string(drive):
     """Normalise drive string to a single letter."""
-    if not drive:
-        raise ValueError("invalid drive letter: %r" % (drive,))
-    if len(drive) > 3:
-        raise ValueError("invalid drive letter: %r" % (drive,))
-    if not drive[0].isalpha():
-        raise ValueError("invalid drive letter: %r" % (drive,))
-    if not ":\\".startswith(drive[1:]):
-        raise ValueError("invalid drive letter: %r" % (drive,))
-    return drive[0].upper()
+    if not drive or not drive[0].isalpha() or not drive[1:3] == ':\\':
+        raise ValueError("invalid path: %r" % (drive,))
 
 
 def mount(fs, drive, foreground=False, ready_callback=None, unmount_callback=None, **kwds):
-    """Mount the given FS at the given drive letter, using Dokan.
+    """Mount the given FS at the given path, using Dokan.
 
     By default, this function spawns a new background process to manage the
     Dokan event loop.  The return value in this case is an instance of the
@@ -885,7 +878,7 @@ def mount(fs, drive, foreground=False, ready_callback=None, unmount_callback=Non
     """
     if libdokan is None:
         raise OSError("the dokan library is not available")
-    drive = _normalise_drive_string(drive)
+    _check_drive_string(drive)
     #  This function captures the logic of checking whether the Dokan mount
     #  is up and running.  Unfortunately I can't find a way to get this
     #  via a callback in the Dokan API.  Instead we just check for the drive
@@ -898,7 +891,7 @@ def mount(fs, drive, foreground=False, ready_callback=None, unmount_callback=Non
             check_alive(mp)
             for _ in xrange(100):
                 try:
-                    os.stat(drive+":\\")
+                    os.stat(drive)
                 except EnvironmentError, e:
                     check_alive(mp)
                     time.sleep(0.05)
@@ -917,7 +910,7 @@ def mount(fs, drive, foreground=False, ready_callback=None, unmount_callback=Non
         numthreads = kwds.pop("numthreads",0)
         flags = kwds.pop("flags",0)
         FSOperationsClass = kwds.pop("FSOperationsClass",FSOperations)
-        opts = libdokan.DOKAN_OPTIONS(drive[:1], numthreads, flags)
+        opts = libdokan.DOKAN_OPTIONS(drive, numthreads, flags)
         ops = FSOperationsClass(fs, **kwds)
         if ready_callback:
             check_thread = threading.Thread(target=check_ready)
@@ -950,7 +943,7 @@ def unmount(drive):
     It works but may leave dangling processes; its better to use the "unmount"
     method on the MountProcess class if you have one.
     """
-    drive = _normalise_drive_string(drive)
+    _check_drive_string(drive)
     if not libdokan.DokanUnmount(drive):
         raise OSError("filesystem could not be unmounted: %s" % (drive,))
 
@@ -983,7 +976,8 @@ class MountProcess(subprocess.Popen):
     def __init__(self, fs, drive, dokan_opts={}, nowait=False, **kwds):
         if libdokan is None:
             raise OSError("the dokan library is not available")
-        self.drive = _normalise_drive_string(drive)
+        _check_drive_string(drive)
+        self.drive = drive
         self.path = self.drive + ":\\"
         cmd = "import cPickle; "
         cmd = cmd + "data = cPickle.loads(%s); "
@@ -1068,7 +1062,7 @@ if __name__ == "__main__":
         #fs = MemoryFS()
         fs.setcontents("test1.txt",b("test one"))
         flags = DOKAN_OPTION_DEBUG|DOKAN_OPTION_STDERR|DOKAN_OPTION_REMOVABLE
-        mount(fs, "Q", foreground=True, numthreads=1, flags=flags)
+        mount(fs, "Q:\\", foreground=True, numthreads=1, flags=flags)
         fs.close()
     finally:
         rmtree(path)
