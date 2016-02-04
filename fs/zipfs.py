@@ -36,10 +36,11 @@ class ZipNotFoundError(CreateFailedError):
 class _TempWriteFile(object):
     """Proxies a file object and calls a callback when the file is closed."""
 
-    def __init__(self, fs, filename, close_callback):
+    def __init__(self, fs, filename, compress_type, close_callback):
         self.fs = fs
         self.filename = filename
         self._file = self.fs.open(filename, 'wb+')
+        self._compress_type = compress_type
         self.close_callback = close_callback
 
     def write(self, data):
@@ -50,7 +51,7 @@ class _TempWriteFile(object):
 
     def close(self):
         self._file.close()
-        self.close_callback(self.filename)
+        self.close_callback(self.filename, self._compress_type)
 
     def flush(self):
         self._file.flush()
@@ -195,7 +196,7 @@ class ZipFS(FS):
 
     @synchronize
     @iotools.filelike_to_stream
-    def open(self, path, mode='r', buffering=-1, encoding=None, errors=None, newline=None, line_buffering=False, **kwargs):
+    def open(self, path, mode='r', buffering=-1, encoding=None, errors=None, newline=None, line_buffering=False, compress_type=None, **kwargs):
         path = normpath(relpath(path))
 
         if 'r' in mode:
@@ -223,7 +224,7 @@ class ZipFS(FS):
                 self.temp_fs.makedir(dirname, recursive=True, allow_recreate=True)
 
             self._add_resource(path)
-            f = _TempWriteFile(self.temp_fs, path, self._on_write_close)
+            f = _TempWriteFile(self.temp_fs, path, compress_type, self._on_write_close)
             return f
 
         raise ValueError("Mode must contain be 'r' or 'w'")
@@ -244,9 +245,9 @@ class ZipFS(FS):
         return iotools.decode_binary(contents, encoding=encoding, errors=errors, newline=newline)
 
     @synchronize
-    def _on_write_close(self, filename):
+    def _on_write_close(self, filename, compress_type):
         sys_path = self.temp_fs.getsyspath(filename)
-        self.zf.write(sys_path, self._encode_path(filename))
+        self.zf.write(sys_path, self._encode_path(filename), compress_type)
 
     def desc(self, path):
         return "%s in zip file %s" % (path, self.zip_path)
