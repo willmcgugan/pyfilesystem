@@ -865,6 +865,7 @@ class FTPFS(FS):
               'atomic.rename' : True,
               'atomic.setcontents' : False,
               'file.read_and_write' : False,
+              'mime_type': 'virtual/ftp',
               }
 
     def __init__(self, host='', user='', passwd='', acct='', timeout=_GLOBAL_DEFAULT_TIMEOUT, port=21, dircache=True, follow_symlinks=False):
@@ -1350,7 +1351,7 @@ class FTPFS(FS):
     def getinfo(self, path):
         dirlist, fname = self._check_path(path)
         if not fname:
-            return {}
+            return { 'size': 0, 'isdir': True, 'isfile': False }
         info = dirlist[fname].copy()
         info['modified_time'] = datetime.datetime.fromtimestamp(info['mtime'])
         info['created_time'] = info['modified_time']
