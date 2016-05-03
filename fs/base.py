@@ -1205,8 +1205,9 @@ class FS(object):
                     return
                 except OSError:
                     pass
-            self.copy(src, dst, overwrite=overwrite, chunk_size=chunk_size)
-            self.remove(src)
+            self.copy(src, dst, overwrite=overwrite, chunk_size=chunk_size,
+                      bypass_lock=True)
+            self.remove(src, bypass_lock=True)
 
     def movedir(self, src, dst, overwrite=False, ignore_errors=False, chunk_size=16384):
         """moves a directory from one location to another.
