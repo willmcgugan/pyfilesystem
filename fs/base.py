@@ -1279,7 +1279,10 @@ class FS(object):
                     dst_filename = pathjoin(dst_dirpath, filename)
                     movefile(src_filename, dst_filename, overwrite=overwrite, chunk_size=chunk_size)
 
-                self.removedir(dirname)
+                if dirname == src:
+                    self.removedir(dirname, bypass_lock=True)
+                else:
+                    self.removedir(dirname)
 
     def copydir(self, src, dst, overwrite=False, ignore_errors=False, chunk_size=16384):
         """copies a directory from one location to another.
