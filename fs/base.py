@@ -802,7 +802,8 @@ class FS(object):
                      errors=None,
                      chunk_size=1024 * 64,
                      progress_callback=None,
-                     finished_callback=None):
+                     finished_callback=None,
+                     bypass_lock=False):
         """Does the work of setcontents. Factored out, so that `setcontents_async` can use it"""
         if progress_callback is None:
             progress_callback = lambda bytes_written: None
@@ -822,9 +823,10 @@ class FS(object):
             read = data.read
             chunk = read(chunk_size)
             if isinstance(chunk, six.text_type):
-                f = self.open(path, 'wt', encoding=encoding, errors=errors)
+                f = self.open(path, 'wt', encoding=encoding, errors=errors,
+                              bypass_lock=bypass_lock)
             else:
-                f = self.open(path, 'wb')
+                f = self.open(path, 'wb', bypass_lock=bypass_lock)
             write = f.write
             try:
                 while chunk:
@@ -848,7 +850,8 @@ class FS(object):
         finished_callback()
         return bytes_written
 
-    def setcontents(self, path, data=b'', encoding=None, errors=None, chunk_size=1024 * 64):
+    def setcontents(self, path, data=b'', encoding=None, errors=None,
+                    chunk_size=1024 * 64, bypass_lock=False):
         """A convenience method to create a new file from a string or file-like object
 
         :param path: a path of the file to create
@@ -858,7 +861,7 @@ class FS(object):
         :param chunk_size: Number of bytes to read in a chunk, if the implementation has to resort to a read / copy loop
 
         """
-        return self._setcontents(path, data, encoding=encoding, errors=errors, chunk_size=1024 * 64)
+        return self._setcontents(path, data, encoding=encoding, errors=errors, chunk_size=1024 * 64, bypass_lock=bypass_lock)
 
     def setcontents_async(self,
                           path,
@@ -1143,7 +1146,8 @@ class FS(object):
                 src_file = None
                 try:
                     src_file = self.open(src, "rb")
-                    self.setcontents(dst, src_file, chunk_size=chunk_size)
+                    self.setcontents(dst, src_file, chunk_size=chunk_size,
+                                     bypass_lock=True)
                 except ResourceNotFoundError:
                     if self.exists(src) and not self.exists(dirname(dst)):
                         raise ParentDirectoryMissingError(dst)
@@ -1205,8 +1209,9 @@ class FS(object):
                     return
                 except OSError:
                     pass
-            self.copy(src, dst, overwrite=overwrite, chunk_size=chunk_size)
-            self.remove(src)
+            self.copy(src, dst, overwrite=overwrite, chunk_size=chunk_size,
+                      bypass_lock=True)
+            self.remove(src, bypass_lock=True)
 
     def movedir(self, src, dst, overwrite=False, ignore_errors=False, chunk_size=16384):
         """moves a directory from one location to another.
@@ -1274,7 +1279,10 @@ class FS(object):
                     dst_filename = pathjoin(dst_dirpath, filename)
                     movefile(src_filename, dst_filename, overwrite=overwrite, chunk_size=chunk_size)
 
-                self.removedir(dirname)
+                if dirname == src:
+                    self.removedir(dirname, bypass_lock=True)
+                else:
+                    self.removedir(dirname)
 
     def copydir(self, src, dst, overwrite=False, ignore_errors=False, chunk_size=16384):
         """copies a directory from one location to another.
