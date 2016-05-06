@@ -238,8 +238,11 @@ class OSFS(OSFSXAttrMixin, OSFSWatchMixin, FS):
             raise
 
     @convert_os_errors
-    def setcontents(self, path, data=b'', encoding=None, errors=None, chunk_size=64 * 1024):
-        return super(OSFS, self).setcontents(path, data, encoding=encoding, errors=errors, chunk_size=chunk_size)
+    def setcontents(self, path, data=b'', encoding=None, errors=None,
+                    chunk_size=64 * 1024, bypass_lock=False):
+        return super(OSFS, self).setcontents(
+            path, data, encoding=encoding, errors=errors,
+            chunk_size=chunk_size, bypass_lock=bypass_lock)
 
     @convert_os_errors
     def exists(self, path):

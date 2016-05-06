@@ -44,9 +44,11 @@ class SubFS(WrapFS):
             return self.wrapped_fs.desc(self.sub_dir)
         return '%s!%s' % (self.wrapped_fs.desc(self.sub_dir), path)
 
-    def setcontents(self, path, data, encoding=None, errors=None, chunk_size=64*1024):
+    def setcontents(self, path, data, encoding=None, errors=None,
+                    chunk_size=64*1024, bypass_lock=False):
         path = self._encode(path)
-        return self.wrapped_fs.setcontents(path, data, chunk_size=chunk_size)
+        return self.wrapped_fs.setcontents(path, data, chunk_size=chunk_size,
+                                           bypass_lock=bypass_lock)
 
     def opendir(self, path):
         if not self.exists(path):

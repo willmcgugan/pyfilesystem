@@ -272,7 +272,8 @@ class S3FS(FS):
 
         return url
 
-    def setcontents(self, path, data=b'', encoding=None, errors=None, chunk_size=64*1024):
+    def setcontents(self, path, data=b'', encoding=None, errors=None,
+                    chunk_size=64*1024, bypass_lock=False):
         s3path = self._s3path(path)
         if isinstance(data, six.text_type):
             data = data.encode(encoding=encoding, errors=errors)

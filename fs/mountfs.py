@@ -312,18 +312,20 @@ class MountFS(FS):
         return fs.open(delegate_path, mode, **kwargs)
 
     @synchronize
-    def setcontents(self, path, data=b'', encoding=None, errors=None, chunk_size=64*1024):
+    def setcontents(self, path, data=b'', encoding=None, errors=None,
+                    chunk_size=64*1024, bypass_lock=False):
         obj = self.mount_tree.get(path, None)
         if type(obj) is MountFS.FileMount:
             return super(MountFS, self).setcontents(path,
                                                     data,
                                                     encoding=encoding,
                                                     errors=errors,
-                                                    chunk_size=chunk_size)
+                                                    chunk_size=chunk_size,
+                                                    bypass_lock=bypass_lock)
         fs, _mount_path, delegate_path = self._delegate(path)
         if fs is self or fs is None:
             raise ParentDirectoryMissingError(path)
-        return fs.setcontents(delegate_path, data, encoding=encoding, errors=errors, chunk_size=chunk_size)
+        return fs.setcontents(delegate_path, data, encoding=encoding, errors=errors, chunk_size=chunk_size, bypass_lock=False)
 
     @synchronize
     def createfile(self, path, wipe=False):

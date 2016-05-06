@@ -345,7 +345,8 @@ class DAVFS(FS):
                 msg = str(e)
             raise RemoteConnectionError("",msg=msg,details=e)
 
-    def setcontents(self,path, data=b'', encoding=None, errors=None, chunk_size=1024 * 64):
+    def setcontents(self,path, data=b'', encoding=None, errors=None,
+                    chunk_size=1024 * 64, bypass_lock=False):
         if isinstance(data, six.text_type):
             data = data.encode(encoding=encoding, errors=errors)
         resp = self._request(path, "PUT", data)

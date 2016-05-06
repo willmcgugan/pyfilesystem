@@ -1172,7 +1172,8 @@ class FTPFS(FS):
         return f
 
     @ftperrors
-    def setcontents(self, path, data=b'', encoding=None, errors=None, chunk_size=1024*64):
+    def setcontents(self, path, data=b'', encoding=None, errors=None,
+                    chunk_size=1024*64, bypass_lock=False):
         path = normpath(path)
         data = iotools.make_bytes_io(data, encoding=encoding, errors=errors)
         self.refresh_dircache(dirname(path))

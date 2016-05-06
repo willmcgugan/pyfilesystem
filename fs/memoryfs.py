@@ -642,7 +642,8 @@ class MemoryFS(FS):
         return data
 
     @synchronize
-    def setcontents(self, path, data=b'', encoding=None, errors=None, chunk_size=1024*64):
+    def setcontents(self, path, data=b'', encoding=None, errors=None,
+                    chunk_size=1024*64, bypass_lock=False):
         if isinstance(data, six.binary_type):
             if not self.exists(path):
                 self.open(path, 'wb').close()
@@ -654,7 +655,9 @@ class MemoryFS(FS):
             dir_entry.mem_file = new_mem_file
             return len(data)
 
-        return super(MemoryFS, self).setcontents(path, data=data, encoding=encoding, errors=errors, chunk_size=chunk_size)
+        return super(MemoryFS, self).setcontents(
+            path, data=data, encoding=encoding, errors=errors,
+            chunk_size=chunk_size, bypass_lock=bypass_lock)
 
         # if isinstance(data, six.text_type):
         #     return super(MemoryFS, self).setcontents(path, data, encoding=encoding, errors=errors, chunk_size=chunk_size)
