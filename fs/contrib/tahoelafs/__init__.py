@@ -257,7 +257,7 @@ class _TahoeLAFS(FS):
             yield (item_path, item)
 
     @_fix_path
-    def remove(self, path):
+    def remove(self, path, **kwargs):
         self._log(INFO, 'Removing file %s' % path)
         if self.getmeta("read_only"):
             raise errors.UnsupportedError('read only filesystem')

@@ -17,9 +17,10 @@ from six import PY3
 try:
     from fs import s3fs
 except ImportError:
-    raise unittest.SkipTest("s3fs wasn't importable")    
-    
+    s3fs = None
 
+
+@unittest.skipIf(s3fs is None, "s3fs wasn't importable")
 class TestS3FS(unittest.TestCase,FSTestCases,ThreadingTestCases):
 
     #  Disable the tests by default
@@ -27,7 +28,7 @@ class TestS3FS(unittest.TestCase,FSTestCases,ThreadingTestCases):
 
     bucket = "test-s3fs.rfk.id.au"
 
-    def setUp(self):        
+    def setUp(self):
         self.fs = s3fs.S3FS(self.bucket)
         for k in self.fs._s3bukt.list():
             self.fs._s3bukt.delete_key(k)

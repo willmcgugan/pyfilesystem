@@ -146,7 +146,7 @@ class FTPFS(AbstractedFS):
 
     @convert_fs_errors
     @decode_args
-    def remove(self, path):
+    def remove(self, path, **kwargs):
         self.fs.remove(path)
 
     @convert_fs_errors

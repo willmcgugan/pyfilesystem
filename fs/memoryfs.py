@@ -450,7 +450,7 @@ class MemoryFS(FS):
             raise ResourceNotFoundError(path)
 
     @synchronize
-    def remove(self, path):
+    def remove(self, path, **kwargs):
         dir_entry = self._get_dir_entry(path)
 
         if dir_entry is None:

@@ -282,7 +282,7 @@ class RPCFS(FS):
         return self.proxy.makedir(path, recursive, allow_recreate)
 
     @synchronize
-    def remove(self, path):
+    def remove(self, path, **kwargs):
         path = self.encode_path(path)
         return self.proxy.remove(path)
 

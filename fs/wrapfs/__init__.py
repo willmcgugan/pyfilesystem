@@ -165,8 +165,7 @@ class WrapFS(FS):
         if getattr(self.__class__, '_file_wrap', None) is getattr(WrapFS, '_file_wrap', None):
             return self.wrapped_fs.setcontents(self._encode(path), data, encoding=encoding, errors=errors, chunk_size=chunk_size)
         else:
-            return super(WrapFS, self).setcontents(path, data, encoding=encoding, errors=errors, chunk_size=chunk_size, bypass_lock=False,
-                bypass_lock=bypass_lock)
+            return super(WrapFS, self).setcontents(path, data, encoding=encoding, errors=errors, chunk_size=chunk_size, bypass_lock=bypass_lock)
 
     @rewrite_errors
     def createfile(self, path, wipe=False):
@@ -355,7 +354,7 @@ class WrapFS(FS):
         return self.wrapped_fs.makedir(self._encode(path),*args,**kwds)
 
     @rewrite_errors
-    def remove(self, path):
+    def remove(self, path, **kwargs):
         return self.wrapped_fs.remove(self._encode(path))
 
     @rewrite_errors

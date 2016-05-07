@@ -186,7 +186,7 @@ class LimitSizeFS(WrapFS):
             else:
                 self.move(src,dst)
 
-    def remove(self, path):
+    def remove(self, path, **kwargs):
         with self._size_lock:
             try:
                 (size,_) = self._file_sizes[path]

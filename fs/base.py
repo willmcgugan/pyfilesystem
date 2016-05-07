@@ -641,7 +641,7 @@ class FS(object):
         """
         raise UnsupportedError("make directory")
 
-    def remove(self, path):
+    def remove(self, path, **kwargs):
         """Remove a file from the filesystem.
 
         :param path: Path of the resource to remove

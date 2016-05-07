@@ -338,7 +338,7 @@ class MountFS(FS):
         return fs.createfile(delegate_path, wipe=wipe)
 
     @synchronize
-    def remove(self, path):
+    def remove(self, path, **kwargs):
         fs, _mount_path, delegate_path = self._delegate(path)
         if fs is self or fs is None:
             raise UnsupportedError("remove file", msg="Can only remove paths within a mounted dir")

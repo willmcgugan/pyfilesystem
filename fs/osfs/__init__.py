@@ -296,7 +296,7 @@ class OSFS(OSFSXAttrMixin, OSFSWatchMixin, FS):
             raise ParentDirectoryMissingError(path)
 
     @convert_os_errors
-    def remove(self, path):
+    def remove(self, path, **kwargs):
         sys_path = self.getsyspath(path)
         try:
             os.remove(sys_path)

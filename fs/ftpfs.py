@@ -1291,7 +1291,7 @@ class FTPFS(FS):
             checkdir(path)
 
     @ftperrors
-    def remove(self, path):
+    def remove(self, path, **kwargs):
         if not self.exists(path):
             raise ResourceNotFoundError(path)
         if not self.isfile(path):
