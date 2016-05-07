@@ -528,7 +528,7 @@ class SFTPFS(FS):
 
     @synchronize
     @convert_os_errors
-    def removedir(self,path,recursive=False,force=False):
+    def removedir(self,path,recursive=False,force=False, **kwargs):
         npath = self._normpath(path)
         if normpath(path) in ('', '/'):
             raise RemoveRootError(path)

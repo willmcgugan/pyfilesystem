@@ -59,7 +59,7 @@ class SubFS(WrapFS):
     def close(self):
         self.closed = True
 
-    def removedir(self, path, recursive=False, force=False):
+    def removedir(self, path, recursive=False, force=False, **kwargs):
         # Careful not to recurse outside the subdir
         path = normpath(path)
         if path in ('', '/'):

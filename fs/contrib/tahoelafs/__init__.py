@@ -273,7 +273,7 @@ class _TahoeLAFS(FS):
             raise errors.ResourceInvalidError(path)
 
     @_fix_path
-    def removedir(self, path, recursive=False, force=False):
+    def removedir(self, path, recursive=False, force=False, **kwargs):
         self._log(INFO, "Removing directory %s" % path)
         if self.getmeta("read_only"):
             raise errors.UnsupportedError('read only filesystem')

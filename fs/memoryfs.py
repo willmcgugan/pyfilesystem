@@ -464,7 +464,7 @@ class MemoryFS(FS):
         del parent_dir.contents[dirname]
 
     @synchronize
-    def removedir(self, path, recursive=False, force=False):
+    def removedir(self, path, recursive=False, force=False, **kwargs):
         path = normpath(path)
         if path in ('', '/'):
             raise RemoveRootError(path)

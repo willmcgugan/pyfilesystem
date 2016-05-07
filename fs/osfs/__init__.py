@@ -312,7 +312,7 @@ class OSFS(OSFSXAttrMixin, OSFSWatchMixin, FS):
             raise
 
     @convert_os_errors
-    def removedir(self, path, recursive=False, force=False):
+    def removedir(self, path, recursive=False, force=False, **kwargs):
         #  Don't remove the root directory of this FS
         if path in ('', '/'):
             raise RemoveRootError(path)

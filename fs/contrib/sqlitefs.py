@@ -603,7 +603,7 @@ class SqliteFS(FS):
             self._updatecur.execute("DELETE FROM FsFileTable where ROWID=?",(content_id,))
 
     @synchronize
-    def removedir(self,path, recursive=False, force=False):
+    def removedir(self,path, recursive=False, force=False, **kwargs):
         self._initdb()
         path = normpath(path)
         if( self.isfile(path)==True):

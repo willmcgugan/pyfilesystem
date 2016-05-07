@@ -196,7 +196,7 @@ class LimitSizeFS(WrapFS):
             self.cur_size -= size
             self._file_sizes.pop(path,None)
 
-    def removedir(self, path, recursive=False, force=False):
+    def removedir(self, path, recursive=False, force=False, **kwargs):
         #  Walk and remove directories by hand, so they we
         #  keep the size accounting precisely up to date.
         for nm in self.listdir(path):

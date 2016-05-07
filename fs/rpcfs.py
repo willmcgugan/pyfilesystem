@@ -287,7 +287,7 @@ class RPCFS(FS):
         return self.proxy.remove(path)
 
     @synchronize
-    def removedir(self, path, recursive=False, force=False):
+    def removedir(self, path, recursive=False, force=False, **kwargs):
         path = self.encode_path(path)
         return self.proxy.removedir(path, recursive, force)
 

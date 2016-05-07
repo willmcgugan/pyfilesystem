@@ -1300,7 +1300,7 @@ class FTPFS(FS):
         self.ftp.delete(_encode(path))
 
     @ftperrors
-    def removedir(self, path, recursive=False, force=False):
+    def removedir(self, path, recursive=False, force=False, **kwargs):
         path = abspath(normpath(path))
         if not self.exists(path):
             raise ResourceNotFoundError(path)

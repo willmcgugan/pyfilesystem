@@ -654,7 +654,7 @@ class FS(object):
         """
         raise UnsupportedError("remove resource")
 
-    def removedir(self, path, recursive=False, force=False):
+    def removedir(self, path, recursive=False, force=False, **kwargs):
         """Remove a directory from the filesystem
 
         :param path: path of the directory to remove

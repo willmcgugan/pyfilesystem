@@ -108,7 +108,7 @@ class RPCFSInterface(object):
         path = self.decode_path(path)
         return self.fs.remove(path)
 
-    def removedir(self, path, recursive=False, force=False):
+    def removedir(self, path, recursive=False, force=False, **kwargs):
         path = self.decode_path(path)
         return self.fs.removedir(path, recursive, force)
 
