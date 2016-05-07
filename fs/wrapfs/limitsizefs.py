@@ -98,7 +98,7 @@ class LimitSizeFS(WrapFS):
         else:
             self._file_sizes[path] = (size,count)
 
-    def setcontents(self, path, data, chunk_size=64*1024, bypass_lock=False):
+    def setcontents(self, path, data, chunk_size=64*1024, **kwargs):
         f = None
         try:
             f = self.open(path, 'wb')

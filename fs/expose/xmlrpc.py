@@ -155,7 +155,7 @@ class RPCFSInterface(object):
         path = self.decode_path(path)
         return [self.encode_path(a) for a in self.fs.listxattrs(path)]
 
-    def copy(self, src, dst, overwrite=False, chunk_size=16384):
+    def copy(self, src, dst, overwrite=False, chunk_size=16384, **kwargs):
         src = self.decode_path(src)
         dst = self.decode_path(dst)
         return self.fs.copy(src, dst, overwrite, chunk_size)

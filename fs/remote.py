@@ -318,9 +318,9 @@ class ConnectionManagerFS(LazyFS):
         self.connected = connected
 
     def setcontents(self, path, data=b'', encoding=None, errors=None,
-                    chunk_size=64*1024, bypass_lock=False):
+                    chunk_size=64*1024, **kwargs):
         return self.wrapped_fs.setcontents(path, data, encoding=encoding,
-            errors=errors, chunk_size=chunk_size, bypass_lock=bypass_lock)
+            errors=errors, chunk_size=chunk_size)
 
     def __getstate__(self):
         state = super(ConnectionManagerFS,self).__getstate__()
@@ -675,10 +675,10 @@ class CacheFSMixin(FS):
         return self.getinfo(path)["size"]
 
     def setcontents(self, path, data=b'', encoding=None, errors=None,
-                    chunk_size=64*1024, bypass_lock=False):
+                    chunk_size=64*1024, **kwargs):
         supsc = super(CacheFSMixin, self).setcontents
         res = supsc(path, data, encoding=None, errors=None,
-                    chunk_size=chunk_size, bypass_lock=bypass_lock)
+                    chunk_size=chunk_size, **kwargs)
         with self.__cache_lock:
             self.__cache.clear(path)
             self.__cache[path] = CachedInfo.new_file_stub()

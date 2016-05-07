@@ -273,7 +273,7 @@ class S3FS(FS):
         return url
 
     def setcontents(self, path, data=b'', encoding=None, errors=None,
-                    chunk_size=64*1024, bypass_lock=False):
+                    chunk_size=64*1024, **kwargs):
         s3path = self._s3path(path)
         if isinstance(data, six.text_type):
             data = data.encode(encoding=encoding, errors=errors)
@@ -595,7 +595,7 @@ class S3FS(FS):
     def desc(self,path):
         return "No description available"
 
-    def copy(self,src,dst,overwrite=False,chunk_size=16384):
+    def copy(self,src,dst,overwrite=False,chunk_size=16384, **kwargs):
         """Copy a file from 'src' to 'dst'.
 
         src -- The source path

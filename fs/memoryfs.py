@@ -608,12 +608,12 @@ class MemoryFS(FS):
             dst_dir_entry.xattrs.update(src_xattrs)
 
     @synchronize
-    def copy(self, src, dst, overwrite=False, chunk_size=1024*64):
+    def copy(self, src, dst, overwrite=False, chunk_size=1024*64, **kwargs):
         src_dir_entry = self._get_dir_entry(src)
         if src_dir_entry is None:
             raise ResourceNotFoundError(src)
         src_xattrs = src_dir_entry.xattrs.copy()
-        super(MemoryFS, self).copy(src, dst, overwrite, chunk_size)
+        super(MemoryFS, self).copy(src, dst, overwrite, chunk_size, **kwargs)
         dst_dir_entry = self._get_dir_entry(dst)
         if dst_dir_entry is not None:
             dst_dir_entry.xattrs.update(src_xattrs)
@@ -643,7 +643,7 @@ class MemoryFS(FS):
 
     @synchronize
     def setcontents(self, path, data=b'', encoding=None, errors=None,
-                    chunk_size=1024*64, bypass_lock=False):
+                    chunk_size=1024*64, **kwargs):
         if isinstance(data, six.binary_type):
             if not self.exists(path):
                 self.open(path, 'wb').close()
@@ -657,7 +657,7 @@ class MemoryFS(FS):
 
         return super(MemoryFS, self).setcontents(
             path, data=data, encoding=encoding, errors=errors,
-            chunk_size=chunk_size, bypass_lock=bypass_lock)
+            chunk_size=chunk_size, **kwargs)
 
         # if isinstance(data, six.text_type):
         #     return super(MemoryFS, self).setcontents(path, data, encoding=encoding, errors=errors, chunk_size=chunk_size)

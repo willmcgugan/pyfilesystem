@@ -1173,7 +1173,7 @@ class FTPFS(FS):
 
     @ftperrors
     def setcontents(self, path, data=b'', encoding=None, errors=None,
-                    chunk_size=1024*64, bypass_lock=False):
+                    chunk_size=1024*64, **kwargs):
         path = normpath(path)
         data = iotools.make_bytes_io(data, encoding=encoding, errors=errors)
         self.refresh_dircache(dirname(path))
@@ -1403,7 +1403,7 @@ class FTPFS(FS):
             self.refresh_dircache(src, dirname(src), dst, dirname(dst))
 
     @ftperrors
-    def copy(self, src, dst, overwrite=False, chunk_size=1024*64):
+    def copy(self, src, dst, overwrite=False, chunk_size=1024*64, **kwargs):
         if not self.isfile(src):
             if self.isdir(src):
                 raise ResourceInvalidError(src, msg="Source is not a file: %(path)s")

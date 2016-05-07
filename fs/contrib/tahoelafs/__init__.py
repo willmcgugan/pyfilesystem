@@ -361,7 +361,7 @@ class _TahoeLAFS(FS):
                     offset=offset, length=length)
 
     @_fix_path
-    def setcontents(self, path, file, chunk_size=64*1024, bypass_lock=False):
+    def setcontents(self, path, file, chunk_size=64*1024, **kwargs):
         self._log(INFO, 'Uploading file %s' % path)
         size=None
 
