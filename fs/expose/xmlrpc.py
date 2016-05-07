@@ -165,7 +165,7 @@ class RPCFSInterface(object):
         dst = self.decode_path(dst)
         return self.fs.move(src, dst, overwrite, chunk_size)
 
-    def movedir(self, src, dst, overwrite=False, ignore_errors=False, chunk_size=16384):
+    def movedir(self, src, dst, overwrite=False, ignore_errors=False, chunk_size=16384, **kwargs):
         src = self.decode_path(src)
         dst = self.decode_path(dst)
         return self.fs.movedir(src, dst, overwrite, ignore_errors, chunk_size)

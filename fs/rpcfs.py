@@ -349,7 +349,7 @@ class RPCFS(FS):
         return self.proxy.move(src, dst, overwrite, chunk_size)
 
     @synchronize
-    def movedir(self, src, dst, overwrite=False, ignore_errors=False, chunk_size=16384):
+    def movedir(self, src, dst, overwrite=False, ignore_errors=False, chunk_size=16384, **kwargs):
         src = self.encode_path(src)
         dst = self.encode_path(dst)
         return self.proxy.movedir(src, dst, overwrite, ignore_errors, chunk_size)

@@ -1425,7 +1425,8 @@ class FTPFS(FS):
 
 
     @ftperrors
-    def movedir(self, src, dst, overwrite=False, ignore_errors=False, chunk_size=16384):
+    def movedir(self, src, dst, overwrite=False, ignore_errors=False,
+                chunk_size=16384, **kwargs):
         self.clear_dircache(dirname(src), dirname(dst))
         super(FTPFS, self).movedir(src, dst, overwrite, ignore_errors, chunk_size)
 

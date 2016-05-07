@@ -1213,7 +1213,8 @@ class FS(object):
                       bypass_lock=True)
             self.remove(src, bypass_lock=True)
 
-    def movedir(self, src, dst, overwrite=False, ignore_errors=False, chunk_size=16384):
+    def movedir(self, src, dst, overwrite=False, ignore_errors=False,
+                chunk_size=16384, **kwargs):
         """moves a directory from one location to another.
 
         :param src: source directory path

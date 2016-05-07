@@ -306,7 +306,7 @@ class _TahoeLAFS(FS):
             raise errors.ParentDirectoryMissingError(path)
         self.tahoeutil.mkdir(self.dircap, path)
 
-    def movedir(self, src, dst, overwrite=False):
+    def movedir(self, src, dst, overwrite=False, **kwargs):
         self.move(src, dst, overwrite=overwrite)
 
     def move(self, src, dst, overwrite=False):

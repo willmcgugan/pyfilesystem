@@ -696,7 +696,7 @@ class CacheFSMixin(FS):
             self.__cache.clear(path)
             self.__cache[path] = CachedInfo.new_dir_stub()
 
-    def remove(self,path):
+    def remove(self,path,**kwds):
         super(CacheFSMixin,self).remove(path)
         with self.__cache_lock:
             self.__cache.clear(path)

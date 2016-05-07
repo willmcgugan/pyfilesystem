@@ -597,7 +597,8 @@ class MemoryFS(FS):
             dst_dir_entry.xattrs.update(src_xattrs)
 
     @synchronize
-    def movedir(self, src, dst, overwrite=False, ignore_errors=False, chunk_size=1024*64):
+    def movedir(self, src, dst, overwrite=False, ignore_errors=False,
+                chunk_size=1024*64, **kwargs):
         src_dir_entry = self._get_dir_entry(src)
         if src_dir_entry is None:
             raise ResourceNotFoundError(src)
