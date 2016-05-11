@@ -1173,7 +1173,7 @@ class FTPFS(FS):
 
     @ftperrors
     def setcontents(self, path, data=b'', encoding=None, errors=None,
-                    chunk_size=1024*64, bypass_lock=False):
+                    chunk_size=1024*64, **kwargs):
         path = normpath(path)
         data = iotools.make_bytes_io(data, encoding=encoding, errors=errors)
         self.refresh_dircache(dirname(path))
@@ -1291,7 +1291,7 @@ class FTPFS(FS):
             checkdir(path)
 
     @ftperrors
-    def remove(self, path):
+    def remove(self, path, **kwargs):
         if not self.exists(path):
             raise ResourceNotFoundError(path)
         if not self.isfile(path):
@@ -1300,7 +1300,7 @@ class FTPFS(FS):
         self.ftp.delete(_encode(path))
 
     @ftperrors
-    def removedir(self, path, recursive=False, force=False):
+    def removedir(self, path, recursive=False, force=False, **kwargs):
         path = abspath(normpath(path))
         if not self.exists(path):
             raise ResourceNotFoundError(path)
@@ -1403,7 +1403,7 @@ class FTPFS(FS):
             self.refresh_dircache(src, dirname(src), dst, dirname(dst))
 
     @ftperrors
-    def copy(self, src, dst, overwrite=False, chunk_size=1024*64):
+    def copy(self, src, dst, overwrite=False, chunk_size=1024*64, **kwargs):
         if not self.isfile(src):
             if self.isdir(src):
                 raise ResourceInvalidError(src, msg="Source is not a file: %(path)s")
@@ -1425,7 +1425,8 @@ class FTPFS(FS):
 
 
     @ftperrors
-    def movedir(self, src, dst, overwrite=False, ignore_errors=False, chunk_size=16384):
+    def movedir(self, src, dst, overwrite=False, ignore_errors=False,
+                chunk_size=16384, **kwargs):
         self.clear_dircache(dirname(src), dirname(dst))
         super(FTPFS, self).movedir(src, dst, overwrite, ignore_errors, chunk_size)
 

@@ -155,7 +155,7 @@ class SFTPServerInterface(paramiko.SFTPServerInterface):
         return self.stat(path)
 
     @report_sftp_errors
-    def remove(self, path):
+    def remove(self, path, **kwargs):
         if not isinstance(path, unicode):
             path = path.decode(self.encoding)
         self.fs.remove(path)

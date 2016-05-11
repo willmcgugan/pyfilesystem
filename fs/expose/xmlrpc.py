@@ -104,11 +104,11 @@ class RPCFSInterface(object):
         path = self.decode_path(path)
         return self.fs.makedir(path, recursive, allow_recreate)
 
-    def remove(self, path):
+    def remove(self, path, **kwargs):
         path = self.decode_path(path)
         return self.fs.remove(path)
 
-    def removedir(self, path, recursive=False, force=False):
+    def removedir(self, path, recursive=False, force=False, **kwargs):
         path = self.decode_path(path)
         return self.fs.removedir(path, recursive, force)
 
@@ -155,7 +155,7 @@ class RPCFSInterface(object):
         path = self.decode_path(path)
         return [self.encode_path(a) for a in self.fs.listxattrs(path)]
 
-    def copy(self, src, dst, overwrite=False, chunk_size=16384):
+    def copy(self, src, dst, overwrite=False, chunk_size=16384, **kwargs):
         src = self.decode_path(src)
         dst = self.decode_path(dst)
         return self.fs.copy(src, dst, overwrite, chunk_size)
@@ -165,7 +165,7 @@ class RPCFSInterface(object):
         dst = self.decode_path(dst)
         return self.fs.move(src, dst, overwrite, chunk_size)
 
-    def movedir(self, src, dst, overwrite=False, ignore_errors=False, chunk_size=16384):
+    def movedir(self, src, dst, overwrite=False, ignore_errors=False, chunk_size=16384, **kwargs):
         src = self.decode_path(src)
         dst = self.decode_path(dst)
         return self.fs.movedir(src, dst, overwrite, ignore_errors, chunk_size)

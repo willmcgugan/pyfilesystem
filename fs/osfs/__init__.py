@@ -239,10 +239,10 @@ class OSFS(OSFSXAttrMixin, OSFSWatchMixin, FS):
 
     @convert_os_errors
     def setcontents(self, path, data=b'', encoding=None, errors=None,
-                    chunk_size=64 * 1024, bypass_lock=False):
+                    chunk_size=64 * 1024, **kwargs):
         return super(OSFS, self).setcontents(
             path, data, encoding=encoding, errors=errors,
-            chunk_size=chunk_size, bypass_lock=bypass_lock)
+            chunk_size=chunk_size, **kwargs)
 
     @convert_os_errors
     def exists(self, path):
@@ -296,7 +296,7 @@ class OSFS(OSFSXAttrMixin, OSFSWatchMixin, FS):
             raise ParentDirectoryMissingError(path)
 
     @convert_os_errors
-    def remove(self, path):
+    def remove(self, path, **kwargs):
         sys_path = self.getsyspath(path)
         try:
             os.remove(sys_path)
@@ -312,7 +312,7 @@ class OSFS(OSFSXAttrMixin, OSFSWatchMixin, FS):
             raise
 
     @convert_os_errors
-    def removedir(self, path, recursive=False, force=False):
+    def removedir(self, path, recursive=False, force=False, **kwargs):
         #  Don't remove the root directory of this FS
         if path in ('', '/'):
             raise RemoveRootError(path)

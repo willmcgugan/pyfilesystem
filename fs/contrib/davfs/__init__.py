@@ -346,7 +346,7 @@ class DAVFS(FS):
             raise RemoteConnectionError("",msg=msg,details=e)
 
     def setcontents(self,path, data=b'', encoding=None, errors=None,
-                    chunk_size=1024 * 64, bypass_lock=False):
+                    chunk_size=1024 * 64, **kwargs):
         if isinstance(data, six.text_type):
             data = data.encode(encoding=encoding, errors=errors)
         resp = self._request(path, "PUT", data)
@@ -577,7 +577,7 @@ class DAVFS(FS):
             raise_generic_error(response,"remove",path)
         return True
 
-    def removedir(self,path,recursive=False,force=False):
+    def removedir(self,path,recursive=False,force=False,**kwargs):
         if self.isfile(path):
             raise ResourceInvalidError(path)
         if not force and self.listdir(path):
@@ -679,7 +679,7 @@ class DAVFS(FS):
         return info
 
 
-    def copy(self,src,dst,overwrite=False,chunk_size=None):
+    def copy(self, src, dst, overwrite=False, chunk_size=None, **kwargs):
         if self.isdir(src):
             msg = "Source is not a file: %(path)s"
             raise ResourceInvalidError(src, msg=msg)
@@ -712,7 +712,8 @@ class DAVFS(FS):
             raise ResourceInvalidError(src, msg=msg)
         self._move(src,dst,overwrite=overwrite)
 
-    def movedir(self,src,dst,overwrite=False,ignore_errors=False,chunk_size=0):
+    def movedir(self,src,dst,overwrite=False,ignore_errors=False,chunk_size=0,
+                **kwargs):
         if self.isfile(src):
             msg = "Source is not a directory: %(path)s"
             raise ResourceInvalidError(src, msg=msg)

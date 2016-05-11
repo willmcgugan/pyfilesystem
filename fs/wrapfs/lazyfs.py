@@ -95,9 +95,9 @@ class LazyFS(WrapFS):
 
     wrapped_fs = property(_get_wrapped_fs,_set_wrapped_fs)
 
-    def setcontents(self, path, data, chunk_size=64*1024, bypass_lock=False):
+    def setcontents(self, path, data, chunk_size=64*1024, **kwargs):
         return self.wrapped_fs.setcontents(path, data, chunk_size=chunk_size,
-                                           bypass_lock=bypass_lock)
+                                           **kwargs)
 
     def close(self):
         if not self.closed:

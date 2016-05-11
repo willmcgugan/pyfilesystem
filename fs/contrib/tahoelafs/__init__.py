@@ -257,7 +257,7 @@ class _TahoeLAFS(FS):
             yield (item_path, item)
 
     @_fix_path
-    def remove(self, path):
+    def remove(self, path, **kwargs):
         self._log(INFO, 'Removing file %s' % path)
         if self.getmeta("read_only"):
             raise errors.UnsupportedError('read only filesystem')
@@ -273,7 +273,7 @@ class _TahoeLAFS(FS):
             raise errors.ResourceInvalidError(path)
 
     @_fix_path
-    def removedir(self, path, recursive=False, force=False):
+    def removedir(self, path, recursive=False, force=False, **kwargs):
         self._log(INFO, "Removing directory %s" % path)
         if self.getmeta("read_only"):
             raise errors.UnsupportedError('read only filesystem')
@@ -306,7 +306,7 @@ class _TahoeLAFS(FS):
             raise errors.ParentDirectoryMissingError(path)
         self.tahoeutil.mkdir(self.dircap, path)
 
-    def movedir(self, src, dst, overwrite=False):
+    def movedir(self, src, dst, overwrite=False, **kwargs):
         self.move(src, dst, overwrite=overwrite)
 
     def move(self, src, dst, overwrite=False):
@@ -361,7 +361,7 @@ class _TahoeLAFS(FS):
                     offset=offset, length=length)
 
     @_fix_path
-    def setcontents(self, path, file, chunk_size=64*1024, bypass_lock=False):
+    def setcontents(self, path, file, chunk_size=64*1024, **kwargs):
         self._log(INFO, 'Uploading file %s' % path)
         size=None
 

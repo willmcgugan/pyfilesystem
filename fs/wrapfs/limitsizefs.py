@@ -98,7 +98,7 @@ class LimitSizeFS(WrapFS):
         else:
             self._file_sizes[path] = (size,count)
 
-    def setcontents(self, path, data, chunk_size=64*1024, bypass_lock=False):
+    def setcontents(self, path, data, chunk_size=64*1024, **kwargs):
         f = None
         try:
             f = self.open(path, 'wb')
@@ -186,7 +186,7 @@ class LimitSizeFS(WrapFS):
             else:
                 self.move(src,dst)
 
-    def remove(self, path):
+    def remove(self, path, **kwargs):
         with self._size_lock:
             try:
                 (size,_) = self._file_sizes[path]
@@ -196,7 +196,7 @@ class LimitSizeFS(WrapFS):
             self.cur_size -= size
             self._file_sizes.pop(path,None)
 
-    def removedir(self, path, recursive=False, force=False):
+    def removedir(self, path, recursive=False, force=False, **kwargs):
         #  Walk and remove directories by hand, so they we
         #  keep the size accounting precisely up to date.
         for nm in self.listdir(path):

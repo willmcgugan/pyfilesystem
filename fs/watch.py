@@ -349,7 +349,7 @@ class WatchableFS(WatchableFSMixin,WrapFS):
         super(WatchableFS,self).remove(path)
         self.notify_watchers(REMOVED,path)
 
-    def removedir(self,path,recursive=False,force=False):
+    def removedir(self,path,recursive=False,force=False, **kwargs):
         if not force:
             for nm in self.listdir(path):
                 raise DirectoryNotEmptyError(path)

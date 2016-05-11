@@ -313,7 +313,7 @@ class MountFS(FS):
 
     @synchronize
     def setcontents(self, path, data=b'', encoding=None, errors=None,
-                    chunk_size=64*1024, bypass_lock=False):
+                    chunk_size=64*1024, **kwargs):
         obj = self.mount_tree.get(path, None)
         if type(obj) is MountFS.FileMount:
             return super(MountFS, self).setcontents(path,
@@ -321,11 +321,11 @@ class MountFS(FS):
                                                     encoding=encoding,
                                                     errors=errors,
                                                     chunk_size=chunk_size,
-                                                    bypass_lock=bypass_lock)
+                                                    **kwargs)
         fs, _mount_path, delegate_path = self._delegate(path)
         if fs is self or fs is None:
             raise ParentDirectoryMissingError(path)
-        return fs.setcontents(delegate_path, data, encoding=encoding, errors=errors, chunk_size=chunk_size, bypass_lock=False)
+        return fs.setcontents(delegate_path, data, encoding=encoding, errors=errors, chunk_size=chunk_size)
 
     @synchronize
     def createfile(self, path, wipe=False):
@@ -338,14 +338,14 @@ class MountFS(FS):
         return fs.createfile(delegate_path, wipe=wipe)
 
     @synchronize
-    def remove(self, path):
+    def remove(self, path, **kwargs):
         fs, _mount_path, delegate_path = self._delegate(path)
         if fs is self or fs is None:
             raise UnsupportedError("remove file", msg="Can only remove paths within a mounted dir")
         return fs.remove(delegate_path)
 
     @synchronize
-    def removedir(self, path, recursive=False, force=False):
+    def removedir(self, path, recursive=False, force=False, **kwargs):
         path = normpath(path)
         if path in ('', '/'):
             raise RemoveRootError(path)

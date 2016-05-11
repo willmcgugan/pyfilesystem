@@ -336,7 +336,7 @@ class FUSE(object):
     def truncate(self, path, length):
         return self.operations('truncate', path, length)
 
-    def open(self, path, fip):
+    def open(self, path, fip, **kwargs):
         fi = fip.contents
         if self.raw_fi:
             return self.operations('open', path, fi)

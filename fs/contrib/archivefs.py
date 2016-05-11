@@ -318,7 +318,7 @@ class ArchiveMountFS(mountfs.MountFS):
         else:
             return fs.getsize(delegate_path)
 
-    def remove(self, path):
+    def remove(self, path, **kwargs):
         """A remove() override that deletes an archive directly. It is not fooled
         by a mounted archive. If the path is not an archive, the call is delegated."""
         if libarchive.is_archive_name(path) and self.ismount(path):
