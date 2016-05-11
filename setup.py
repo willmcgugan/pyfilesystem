@@ -41,7 +41,7 @@ extra = {}
 if PY3:
     extra["use_2to3"] = True
 
-setup(install_requires=['setuptools', 'six'],
+setup(install_requires=['setuptools', 'six', 'pyftpdlib'],
       name='fs',
       version=VERSION,
       description="Filesystem abstraction layer",
