@@ -23,6 +23,8 @@ else:
 
 from six import PY3, b
 
+
+@unittest.skipIf(not libarchive_available, "libarchive fs not available")
 class TestReadArchiveFS(unittest.TestCase):
 
     __test__ = libarchive_available
@@ -95,6 +97,7 @@ class TestReadArchiveFS(unittest.TestCase):
         check_listing('foo/bar', ['baz.txt'])
 
 
+@unittest.skipIf(not libarchive_available, "libarchive fs not available")
 class TestWriteArchiveFS(unittest.TestCase):
 
     __test__ = libarchive_available
