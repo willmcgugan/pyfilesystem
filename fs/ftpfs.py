@@ -635,23 +635,23 @@ class _FTPFile(object):
             self.file_size = ftpfs.getsize(path)
         self.conn = None
 
-        self._start_file(mode, _encode(self.path))
+        self._start_file(mode, self.path)
 
     @fileftperrors
     def _start_file(self, mode, path):
         self.read_pos = 0
         self.write_pos = 0
         if 'r' in mode:
-            self.ftp.voidcmd('TYPE I')
-            self.conn = self.ftp.transfercmd('RETR ' + path, None)
+            self.ftp.voidcmd(_encode('TYPE I'))
+            self.conn = self.ftp.transfercmd(_encode('RETR ' + path), None)
 
         else:#if 'w' in mode or 'a' in mode:
-            self.ftp.voidcmd('TYPE I')
+            self.ftp.voidcmd(_encode('TYPE I'))
             if 'a' in mode:
                 self.write_pos = self.file_size
-                self.conn = self.ftp.transfercmd('APPE ' + path)
+                self.conn = self.ftp.transfercmd(_encode('APPE ' + path))
             else:
-                self.conn = self.ftp.transfercmd('STOR ' + path)
+                self.conn = self.ftp.transfercmd(_encode('STOR ' + path))
 
     @fileftperrors
     def read(self, size=None):
@@ -691,7 +691,6 @@ class _FTPFile(object):
 
         data_pos = 0
         remaining_data = len(data)
-
         while remaining_data:
             chunk_size = min(remaining_data, self.blocksize)
             self.conn.sendall(data[data_pos:data_pos+chunk_size])
@@ -742,8 +741,8 @@ class _FTPFile(object):
         self._lock.acquire()
         try:
             self.ftp = self.ftpfs._open_ftp()
-            self.ftp.sendcmd('TYPE I')
-            self.ftp.sendcmd('REST %i' % (new_pos))
+            self.ftp.sendcmd(_encode('TYPE I'))
+            self.ftp.sendcmd(_encode('REST %i' % (new_pos)))
             self.__init__(self.ftpfs, self.ftp, self.path, self.mode)
             self.read_pos = new_pos
         finally:
@@ -779,7 +778,7 @@ class _FTPFile(object):
 
         self.ftp = self.ftpfs._open_ftp()
         self.mode = 'w'
-        self.__init__(self.ftpfs, self.ftp, _encode(self.path), self.mode)
+        self.__init__(self.ftpfs, self.ftp, self.path, self.mode)
         #self._start_file(self.mode, self.path)
         self.write(data)
         if len(data) < size:
@@ -834,6 +833,8 @@ def ftperrors(f):
 
 
 def _encode(s):
+    if PY3:
+        return s
     if isinstance(s, unicode):
         return s.encode('utf-8')
     return s
@@ -965,18 +966,17 @@ class FTPFS(FS):
                     dirlist[info['name']] = info
 
         try:
-            encoded_path = _encode(path)
             ftp_features = _get_FEAT(self.ftp)
             if 'MLST' in ftp_features:
                 self.use_mlst = True
                 try:
                     # only request the facts we need
-                    self.ftp.sendcmd("OPTS MLST type;unique;size;modify;")
+                    self.ftp.sendcmd(_encode("OPTS MLST type;unique;size;modify;"))
                 except error_perm:
                     # some FTP servers don't support OPTS MLST
                     pass
                 # need to send MLST first to discover if it's file or dir
-                response = self.ftp.sendcmd("MLST " + encoded_path)
+                response = self.ftp.sendcmd(_encode("MLST " + path))
                 lines = response.splitlines()
                 if lines[0][:3] == "250":
                     list_line = lines[1]
@@ -988,9 +988,9 @@ class FTPFS(FS):
                 # if it's a dir, then we can send a MLSD
                 if dirlist[dirlist.keys()[0]]['try_cwd']:
                     dirlist = {}
-                    self.ftp.retrlines("MLSD " + encoded_path, on_line)
+                    self.ftp.retrlines(_encode("MLSD " + path), on_line)
             else:
-                self.ftp.dir(encoded_path, on_line)
+                self.ftp.dir(_encode(path), on_line)
         except error_reply:
             pass
         self.dircache[path] = dirlist
@@ -1175,13 +1175,13 @@ class FTPFS(FS):
         path = normpath(path)
         data = iotools.make_bytes_io(data, encoding=encoding, errors=errors)
         self.refresh_dircache(dirname(path))
-        self.ftp.storbinary('STOR %s' % _encode(path), data, blocksize=chunk_size)
+        self.ftp.storbinary(_encode('STOR %s' % path), data, blocksize=chunk_size)
 
     @ftperrors
     def getcontents(self, path, mode="rb", encoding=None, errors=None, newline=None):
         path = normpath(path)
         contents = StringIO()
-        self.ftp.retrbinary('RETR %s' % _encode(path), contents.write, blocksize=1024*64)
+        self.ftp.retrbinary(_encode('RETR %s' % path), contents.write, blocksize=1024*64)
         data = contents.getvalue()
         if 'b' in data:
             return data
@@ -1367,7 +1367,7 @@ class FTPFS(FS):
         if size is not None:
             return size
 
-        self.ftp.sendcmd('TYPE I')
+        self.ftp.sendcmd(_encode('TYPE I'))
         size = self.ftp.size(_encode(path))
         if size is None:
             dirlist, fname = self._check_path(path)
