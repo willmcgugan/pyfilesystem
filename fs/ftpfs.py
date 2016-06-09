@@ -800,7 +800,7 @@ class _FTPFile(object):
         if self.ftp is not None:
             try:
                 self.ftp.close()
-            except error_temp, error_perm:
+            except (error_temp, error_perm):
                 pass
         self.closed = True
 
