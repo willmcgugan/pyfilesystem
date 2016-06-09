@@ -811,7 +811,11 @@ class _FTPFile(object):
         return next(iotools.line_iterator(self, size))
 
     def __iter__(self):
-        return iotools.line_iterator(self)
+        while True:
+            data = self.read(16384)
+            if not data:
+                break
+            yield data
 
 
 def ftperrors(f):
