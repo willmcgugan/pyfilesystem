@@ -812,7 +812,7 @@ class _FTPFile(object):
 
     def __iter__(self):
         while True:
-            data = self.read(16384)
+            data = self.read(self.blocksize)
             if not data:
                 break
             yield data
