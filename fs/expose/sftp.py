@@ -236,12 +236,14 @@ class SFTPHandle(paramiko.SFTPHandle):
 
     @report_sftp_errors
     def read(self, offset, length):
-        self._file.seek(offset)
+        if hasattr(self._file, 'seek'):
+            self._file.seek(offset)
         return self._file.read(length)
 
     @report_sftp_errors
     def write(self, offset, data):
-        self._file.seek(offset)
+        if hasattr(self._file, 'seek'):
+            self._file.seek(offset)
         self._file.write(data)
         return paramiko.SFTP_OK
 
