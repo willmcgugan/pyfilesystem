@@ -585,7 +585,10 @@ class S3FS(FS):
             info['etag'] = etag.strip('"').strip("'")
         if hasattr(key,"last_modified"):
             # TODO: does S3 use any other formats?
-            fmt = "%a, %d %b %Y %H:%M:%S %Z"
+            if '-' in key.last_modified:
+                fmt = "%Y-%m-%dT%H:%M:%S.%fZ"
+            else:
+                fmt = "%a, %d %b %Y %H:%M:%S %Z"
             try:
                 mtime = datetime.datetime.strptime(key.last_modified,fmt)
                 info['modified_time'] = mtime
