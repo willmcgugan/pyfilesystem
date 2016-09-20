@@ -118,7 +118,7 @@ class UnsupportedError(OperationFailedError):
 
 class RemoteConnectionError(OperationFailedError):
     """Exception raised when operations encounter remote connection trouble."""
-    default_message = "%(opname)s: remote connection errror"
+    default_message = "Remote connection error: %(opname)s"
 
 
 class StorageSpaceError(OperationFailedError):
