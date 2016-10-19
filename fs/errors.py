@@ -121,12 +121,7 @@ class UnsupportedError(OperationFailedError):
 
 class RemoteConnectionError(OperationFailedError):
     """Exception raised when operations encounter remote connection trouble."""
-<<<<<<< HEAD
     default_message = "%(opname)s (original_exc = %(originalExc)s): remote connection errror [%(details)s]"
-=======
-    default_message = "Remote connection error: %(opname)s"
->>>>>>> 7b1766ae7f389c9ca6c16bb181a51590af04b02a
-
 
 class StorageSpaceError(OperationFailedError):
     """Exception raised when operations encounter storage space trouble."""
