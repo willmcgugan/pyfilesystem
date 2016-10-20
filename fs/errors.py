@@ -1,7 +1,7 @@
 """
-Defines the Exception classes thrown by PyFilesystem objects. Exceptions relating
-to the underlying filesystem are translated in to one of the following Exceptions.
-Exceptions that relate to a path store that path in `self.path`.
+Defines the Exception classes thrown by PyFilesystem objects. Exceptions
+relating to the underlying filesystem are translated in to one of the following
+Exceptions. Exceptions that relate to a path store that path in `self.path`.
 
 All Exception classes are derived from `FSError` which can be used as a
 catch-all exception.
@@ -84,7 +84,7 @@ class CreateFailedError(FSError):
 class PathError(FSError):
     """Exception for errors to do with a path string.
     """
-    default_message = "Path is invalid (original_exc = %(originalExc)s): %(path)s"
+    default_message = "Path is invalid: %(path)s"
 
     def __init__(self, path="", originalExc=None**kwds):
         self.path = path
@@ -93,18 +93,21 @@ class PathError(FSError):
 
 
 class InvalidPathError(PathError):
-    """Base exception for fs paths that can't be mapped on to the underlaying filesystem."""
-    default_message = "Path is invalid on this filesystem  (original_exc = %(originalExc)s): %(details)s"
+    """
+    Base exception for fs paths that can't be mapped on to the underlaying
+    filesystem.
+    """
+    default_message = "Path is invalid on this filesystem: %(details)s"
 
 
 class InvalidCharsInPathError(InvalidPathError):
     """The path contains characters that are invalid on this filesystem"""
-    default_message = "Path contains invalid characters (original_exc = %(originalExc)s): %(details)s"
+    default_message = "Path contains invalid characters: %(details)s"
 
 
 class OperationFailedError(FSError):
     """Base exception class for errors associated with a specific operation."""
-    default_message = "Unable to %(opname)s (original_exc = %(originalExc)s): unspecified error [%(errno)s - %(details)s]"
+    default_message = "Unable to %(opname)s: unspecified error [%(errno)s - %(details)s]"
 
     def __init__(self, opname="", path=None, originalExc=None, **kwds):
         self.opname = opname
@@ -116,28 +119,29 @@ class OperationFailedError(FSError):
 
 class UnsupportedError(OperationFailedError):
     """Exception raised for operations that are not supported by the FS."""
-    default_message = "Unable to %(opname)s (original_exc = %(originalExc)s): not supported by this filesystem [%(details)s]"
+    default_message = "Unable to %(opname)s: not supported by this filesystem [%(details)s]"
 
 
 class RemoteConnectionError(OperationFailedError):
     """Exception raised when operations encounter remote connection trouble."""
-    default_message = "%(opname)s (original_exc = %(originalExc)s): remote connection errror [%(details)s]"
+    default_message = "%(opname)s remote connection errror [%(details)s]"
+
 
 class StorageSpaceError(OperationFailedError):
     """Exception raised when operations encounter storage space trouble."""
-    default_message = "Unable to %(opname)s (original_exc = %(originalExc)s): insufficient storage space [%(details)s]"
+    default_message = "Unable to %(opname)s insufficient storage space [%(details)s]"
 
 
 class PermissionDeniedError(OperationFailedError):
-    default_message = "Unable to %(opname)s (original_exc = %(originalExc)s): permission denied [%(details)s]"
+    default_message = "Unable to %(opname)s permission denied [%(details)s]"
 
 
 class FSClosedError(OperationFailedError):
-    default_message = "Unable to %(opname)s (original_exc = %(originalExc)s): the FS has been closed [%(details)s]"
+    default_message = "Unable to %(opname)s the FS has been closed [%(details)s]"
 
 
 class OperationTimeoutError(OperationFailedError):
-    default_message = "Unable to %(opname)s (original_exc = %(originalExc)s): operation timed out [%(details)s]"
+    default_message = "Unable to %(opname)s operation timed out [%(details)s]"
 
 
 class RemoveRootError(OperationFailedError):
@@ -146,9 +150,9 @@ class RemoveRootError(OperationFailedError):
 
 class ResourceError(FSError):
     """Base exception class for error associated with a specific resource."""
-    default_message = "Unspecified resource error (original_exc = %(originalExc)s): %(path)s [%(details)s]"
+    default_message = "Unspecified resource error %(path)s [%(details)s]"
 
-    def __init__(self, path="",details=None **kwds):
+    def __init__(self, path="", details=None ** kwds):
         self.path = path
         self.details = details
         self.opname = kwds.pop("opname", None)
@@ -157,12 +161,12 @@ class ResourceError(FSError):
 
 class NoSysPathError(ResourceError):
     """Exception raised when there is no syspath for a given path."""
-    default_message = "No mapping to OS filesystem (original_exc = %(originalExc)s): %(path)s [%(details)s]"
+    default_message = "No mapping to OS filesystem %(path)s [%(details)s]"
 
 
 class NoMetaError(FSError):
     """Exception raised when there is no meta value available."""
-    default_message = "No meta value named '%(meta_name)s (original_exc = %(originalExc)s)' could be retrieved [%(details)s]"
+    default_message = "No meta value named '%(meta_name)s' could be retrieved [%(details)s]"
 
     def __init__(self, meta_name, originalExc=None, details=None, msg=None):
         self.meta_name = meta_name
@@ -176,46 +180,49 @@ class NoMetaError(FSError):
 
 class NoPathURLError(ResourceError):
     """Exception raised when there is no URL form for a given path."""
-    default_message = "No URL form (original_exc = %(originalExc)s): %(path)s [%(details)s]"
+    default_message = "No URL form %(path)s [%(details)s]"
 
 
 class ResourceNotFoundError(ResourceError):
     """Exception raised when a required resource is not found."""
-    default_message = "Resource not found (original_exc = %(originalExc)s): %(details)s"
+    default_message = "Resource not found %(details)s"
 
 
 class ResourceInvalidError(ResourceError):
     """Exception raised when a resource is the wrong type."""
-    default_message = "Resource is invalid (original_exc = %(originalExc)s): %(path)s [%(details)s]"
+    default_message = "Resource is invalid %(path)s [%(details)s]"
 
 
 class DestinationExistsError(ResourceError):
     """Exception raised when a target destination already exists."""
-    default_message = "Destination exists (original_exc = %(originalExc)s): %(path)s [%(details)s]"
+    default_message = "Destination exists %(path)s [%(details)s]"
 
 
 class DirectoryNotEmptyError(ResourceError):
     """Exception raised when a directory to be removed is not empty."""
-    default_message = "Directory is not empty (original_exc = %(originalExc)s): %(path)s [%(details)s]"
+    default_message = "Directory is not empty %(path)s [%(details)s]"
 
 
 class ParentDirectoryMissingError(ResourceError):
     """Exception raised when a parent directory is missing."""
-    default_message = "Parent directory is missing (original_exc = %(originalExc)s): %(path)s [%(details)s]"
+    default_message = "Parent directory is missing %(path)s [%(details)s]"
 
 
 class ResourceLockedError(ResourceError):
     """Exception raised when a resource can't be used because it is locked."""
-    default_message = "Resource is locked (original_exc = %(originalExc)s): %(path)s [%(details)s]"
+    default_message = "Resource is locked %(path)s [%(details)s]"
 
 
 class NoMMapError(ResourceError):
     """Exception raise when getmmap fails to create a mmap"""
-    default_message = "Can't get mmap for %(path)s (original_exc = %(originalExc)s) [%(details)s]"
+    default_message = "Can't get mmap for %(path)s [%(details)s]"
 
 
 class BackReferenceError(ValueError):
-    """Exception raised when too many backrefs exist in a path (ex: '/..', '/docs/../..')."""
+    """
+    Exception raised when too many backrefs exist in a path
+    (ex: '/..', '/docs/../..').
+    """
 
 
 def convert_fs_errors(func):
