@@ -86,7 +86,7 @@ class PathError(FSError):
     """
     default_message = "Path is invalid: %(path)s"
 
-    def __init__(self, path="", originalExc=None**kwds):
+    def __init__(self, path="", originalExc=None, **kwds):
         self.path = path
         self.originalExc = originalExc
         super(PathError, self).__init__(**kwds)
