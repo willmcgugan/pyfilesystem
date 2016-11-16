@@ -49,12 +49,12 @@ class FSError(Exception):
     """Base exception class for the FS module."""
     default_message = "Unspecified error"
 
-    def __init__(self, msg=None, details=None, originalExc=None):
+    def __init__(self, msg=None, details=None, original_exc=None):
         if msg is None:
             msg = self.default_message
         self.msg = msg
         self.details = details
-        self.originalExc = originalExc
+        self.original_exc = original_exc
 
     def __str__(self):
         keys = {}
@@ -86,9 +86,9 @@ class PathError(FSError):
     """
     default_message = "Path is invalid: %(path)s"
 
-    def __init__(self, path="", originalExc=None, **kwds):
+    def __init__(self, path="", original_exc=None, **kwds):
         self.path = path
-        self.originalExc = originalExc
+        self.original_exc = original_exc
         super(PathError, self).__init__(**kwds)
 
 
@@ -109,10 +109,10 @@ class OperationFailedError(FSError):
     """Base exception class for errors associated with a specific operation."""
     default_message = "Unable to %(opname)s: unspecified error [%(errno)s - %(details)s]"
 
-    def __init__(self, opname="", path=None, originalExc=None, **kwds):
+    def __init__(self, opname="", path=None, original_exc=None, **kwds):
         self.opname = opname
         self.path = path
-        self.originalExc = originalExc
+        self.original_exc = original_exc
         self.errno = getattr(kwds.get("details", None), "errno", None)
         super(OperationFailedError, self).__init__(**kwds)
 
@@ -168,9 +168,9 @@ class NoMetaError(FSError):
     """Exception raised when there is no meta value available."""
     default_message = "No meta value named '%(meta_name)s' could be retrieved [%(details)s]"
 
-    def __init__(self, meta_name, originalExc=None, details=None, msg=None):
+    def __init__(self, meta_name, original_exc=None, details=None, msg=None):
         self.meta_name = meta_name
-        self.originalExc = originalExc
+        self.original_exc = original_exc
         self.details = details
         super(NoMetaError, self).__init__(msg)
 
@@ -273,7 +273,7 @@ def convert_os_errors(func):
         except (OSError, IOError), e:
             (exc_type, exc_inst, tb) = sys.exc_info()
             path = getattr(e, "filename", None)
-            originalExc = type(e)
+            original_exc = type(e)
             if path and path[0] == "/" and hasattr(self, "root_path"):
                 path = normpath(path)
                 if isprefix(self.root_path, path):
@@ -282,68 +282,68 @@ def convert_os_errors(func):
                 raise OperationFailedError(opname, details=e), None, tb
             if e.errno == errno.ENOENT:
                 raise ResourceNotFoundError(
-                    path, opname=opname, details=e, originalExc=originalExc), None, tb
+                    path, opname=opname, details=e, original_exc=original_exc), None, tb
             if e.errno == errno.EFAULT:
                 # This can happen when listdir a directory that is deleted by another thread
                 # Best to interpret it as a resource not found
                 raise ResourceNotFoundError(
-                    path, opname=opname, details=e, originalExc=originalExc), None, tb
+                    path, opname=opname, details=e, original_exc=original_exc), None, tb
             if e.errno == errno.ESRCH:
                 raise ResourceNotFoundError(
-                    path, opname=opname, details=e, originalExc=originalExc), None, tb
+                    path, opname=opname, details=e, original_exc=original_exc), None, tb
             if e.errno == errno.ENOTEMPTY:
                 raise DirectoryNotEmptyError(
-                    path, opname=opname, details=e, originalExc=originalExc), None, tb
+                    path, opname=opname, details=e, original_exc=original_exc), None, tb
             if e.errno == errno.EEXIST:
                 raise DestinationExistsError(
-                    path, opname=opname, details=e, originalExc=originalExc), None, tb
+                    path, opname=opname, details=e, original_exc=original_exc), None, tb
             if e.errno == 183:  # some sort of win32 equivalent to EEXIST
                 raise DestinationExistsError(
-                    path, opname=opname, details=e, originalExc=originalExc), None, tb
+                    path, opname=opname, details=e, original_exc=original_exc), None, tb
             if e.errno == errno.ENOTDIR:
                 raise ResourceInvalidError(
-                    path, opname=opname, details=e, originalExc=originalExc), None, tb
+                    path, opname=opname, details=e, original_exc=original_exc), None, tb
             if e.errno == errno.EISDIR:
                 raise ResourceInvalidError(
-                    path, opname=opname, details=e, originalExc=originalExc), None, tb
+                    path, opname=opname, details=e, original_exc=original_exc), None, tb
             if e.errno == errno.EINVAL:
                 raise ResourceInvalidError(
-                    path, opname=opname, details=e, originalExc=originalExc), None, tb
+                    path, opname=opname, details=e, original_exc=original_exc), None, tb
             if e.errno == errno.ENOSPC:
                 raise StorageSpaceError(
-                    opname, path=path, details=e, originalExc=originalExc), None, tb
+                    opname, path=path, details=e, original_exc=original_exc), None, tb
             if e.errno == errno.EPERM:
                 raise PermissionDeniedError(
-                    opname, path=path, details=e, originalExc=originalExc), None, tb
+                    opname, path=path, details=e, original_exc=original_exc), None, tb
             if hasattr(errno, "ENONET") and e.errno == errno.ENONET:
                 raise RemoteConnectionError(
-                    opname, path=path, details=e, originalExc=originalExc), None, tb
+                    opname, path=path, details=e, original_exc=original_exc), None, tb
             if e.errno == errno.ENETDOWN:
                 raise RemoteConnectionError(
-                    opname, path=path, details=e, originalExc=originalExc), None, tb
+                    opname, path=path, details=e, original_exc=original_exc), None, tb
             if e.errno == errno.ECONNRESET:
                 raise RemoteConnectionError(
-                    opname, path=path, details=e, originalExc=originalExc), None, tb
+                    opname, path=path, details=e, original_exc=original_exc), None, tb
             if e.errno == errno.EACCES:
                 if sys.platform == "win32":
                     if e.args[0] and e.args[0] == 32:
                         raise ResourceLockedError(
-                            path, opname=opname, details=e, originalExc=originalExc), None, tb
+                            path, opname=opname, details=e, original_exc=original_exc), None, tb
                 raise PermissionDeniedError(opname, details=e), None, tb
             # Sometimes windows gives some random errors...
             if sys.platform == "win32":
                 if e.errno in (13,):
                     raise ResourceInvalidError(
-                        path, opname=opname, details=e, originalExc=originalExc), None, tb
+                        path, opname=opname, details=e, original_exc=original_exc), None, tb
             if e.errno == errno.ENAMETOOLONG:
                 raise PathError(path, details=e,
-                                originalExc=originalExc), None, tb
+                                original_exc=original_exc), None, tb
             if e.errno == errno.EOPNOTSUPP:
                 raise UnsupportedError(
-                    opname, details=e, originalExc=originalExc), None, tb
+                    opname, details=e, original_exc=original_exc), None, tb
             if e.errno == errno.ENOSYS:
                 raise UnsupportedError(
-                    opname, details=e, originalExc=originalExc), None, tb
+                    opname, details=e, original_exc=original_exc), None, tb
             raise OperationFailedError(
-                opname, details=e, originalExc=originalExc), None, tb
+                opname, details=e, original_exc=originalExc), None, tb
     return wrapper
