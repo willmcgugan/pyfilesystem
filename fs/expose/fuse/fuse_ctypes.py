@@ -12,7 +12,7 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-from __future__ import division
+
 
 from ctypes import *
 from ctypes.util import find_library
@@ -21,6 +21,24 @@ from functools import partial
 from platform import machine, system
 from stat import S_IFDIR
 from traceback import print_exc
+import six
+
+if six.PY3:
+    unicode_ = str
+else:
+    unicode_ = unicode  # NOQA: F821 undefined name 'unicode': Needed for python3 compatibility
+
+def ensure_unicode(value):
+    if not isinstance(value, unicode_):
+        return value.decode("utf-8")
+    else:
+        return value
+
+def ensure_bytes(value):
+    if isinstance(value, unicode_):
+        return value.encode("utf-8")
+    else:
+        return value
 
 _system = system()
 _machine = machine()
@@ -273,7 +291,7 @@ def time_of_timespec(ts):
     return ts.tv_sec + ts.tv_nsec / 10 ** 9
 
 def set_st_attrs(st, attrs):
-    for key, val in attrs.items():
+    for key, val in list(attrs.items()):
         if key in ('st_atime', 'st_mtime', 'st_ctime'):
             timespec = getattr(st, key + 'spec')
             timespec.tv_sec = int(val)
@@ -314,9 +332,10 @@ class FUSE(object):
         kwargs.setdefault('fsname', operations.__class__.__name__)
         args.append('-o')
         args.append(','.join(key if val == True else '%s=%s' % (key, val)
-            for key, val in kwargs.items()))
+            for key, val in list(kwargs.items())))
         args.append(mountpoint)
-        argv = (c_char_p * len(args))(*args)
+        byteargs = [arg.encode("utf-8") for arg in args]
+        argv = (c_char_p * len(args))(*byteargs)
 
         fuse_ops = fuse_operations()
         for name, prototype in fuse_operations._fields_:
@@ -331,7 +350,7 @@ class FUSE(object):
         """Decorator for the methods that follow"""
         try:
             return func(*args, **kwargs) or 0
-        except OSError, e:
+        except OSError as e:
             return -(e.errno or EFAULT)
         except:
             print_exc()
@@ -400,7 +419,7 @@ class FUSE(object):
     def statfs(self, path, buf):
         stv = buf.contents
         attrs = self.operations('statfs', path)
-        for key, val in attrs.items():
+        for key, val in list(attrs.items()):
             if hasattr(stv, key):
                 setattr(stv, key, val)
         return 0
@@ -464,7 +483,7 @@ class FUSE(object):
                     set_st_attrs(st, attrs)
                 else:
                     st = None
-            if filler(buf, name, st, offset) != 0:
+            if filler(buf, ensure_bytes(name), st, offset) != 0:
                 break
         return 0
 
@@ -576,7 +595,7 @@ class Operations(object):
 
         if path != '/':
             raise OSError(ENOENT, '')
-        return dict(st_mode=(S_IFDIR | 0755), st_nlink=2)
+        return dict(st_mode=(S_IFDIR | 0o755), st_nlink=2)
 
     def getxattr(self, path, name, position=0):
         raise OSError(ENOTSUP, '')
@@ -667,13 +686,13 @@ class Operations(object):
 
 class LoggingMixIn:
     def __call__(self, op, path, *args):
-        print '->', op, path, repr(args)
+        print('->', op, path, repr(args))
         ret = '[Unknown Error]'
         try:
             ret = getattr(self, op)(path, *args)
             return ret
-        except OSError, e:
+        except OSError as e:
             ret = str(e)
             raise
         finally:
-            print '<-', op, repr(ret)
+            print('<-', op, repr(ret))
