@@ -8,7 +8,8 @@ Instances of FS represent a filesystem containing files and directories
 that can be queried and manipulated.  To implement a new kind of filesystem,
 start by sublcassing the base FS class.
 
-For more information regarding implementing a working PyFilesystem interface, see :ref:`implementers`.
+For more information regarding implementing a working PyFilesystem interface,
+see :ref:`implementers`.
 
 """
 
@@ -68,11 +69,12 @@ class DummyLock(object):
 
 
 def silence_fserrors(f, *args, **kwargs):
-    """Perform a function call and return ``None`` if an :class:`fs.errors.FSError` is thrown
+    """Perform a function call, and return what the function returned or ``None``
+    if an :class:`fs.errors.FSError` is thrown. Other exceptions are propagated.
 
-    :param f: Function to call
-    :param args: Parameters to f
-    :param kwargs: Keyword parameters to f
+    :param f: function to call
+    :param args: parameters to f
+    :param kwargs: keyword parameters to f
 
     """
     try:
@@ -82,16 +84,19 @@ def silence_fserrors(f, *args, **kwargs):
 
 
 class NoDefaultMeta(object):
-    """A singleton used to signify that there is no default for getmeta"""
+    """A singleton used to signify that there is no default for getmeta.
+
+    Used only internally, there is no reason why user would instantiate this class.
+    """
     pass
 
 
 class NullFile(object):
     """A NullFile is a file object that has no functionality.
 
-    Null files are returned by the :meth:`fs.base.FS.safeopen` method in FS objects when the
-    file doesn't exist. This can simplify code by negating the need to check
-    if a file exists, or handling exceptions.
+    Null files are returned by the :meth:`fs.base.FS.safeopen` method in
+    FS objects when the file doesn't exist. This can simplify code by negating
+    the need to check if a file exists, or handling exceptions.
 
     """
     def __init__(self):
@@ -151,7 +156,8 @@ def synchronize(func):
 
 class FS(object):
     """The base class for Filesystem abstraction objects.
-    An instance of a class derived from FS is an abstraction on some kind of filesystem, such as the OS filesystem or a zip file.
+    An instance of a class derived from FS is an abstraction on some kind
+    of filesystem, such as the OS filesystem or a zip file.
 
     """
 
@@ -160,11 +166,11 @@ class FS(object):
     def __init__(self, thread_synchronize=True):
         """The base class for Filesystem objects.
 
-        :param thread_synconize: If True, a lock object will be created for the object, otherwise a dummy lock will be used.
+        :param thread_synchronize: If True, a lock object will be created
+            for the object, otherwise a dummy lock will be created.
         :type thread_synchronize: bool
 
         """
-
         self.closed = False
         super(FS, self).__init__()
         self.thread_synchronize = thread_synchronize
@@ -187,13 +193,15 @@ class FS(object):
         self.close()
 
     def cachehint(self, enabled):
-        """Recommends the use of caching. Implementations are free to use or
-            ignore this value.
+        """Recommend the use of caching. Implementations are free to use
+        or ignore this value.
 
-        :param enabled: If True the implementation is permitted to aggressively cache directory
-            structure / file information. Caching such information can speed up many operations,
-            particularly for network based filesystems. The downside of caching is that
-            changes made to directories or files outside of this interface may not be picked up immediately.
+        :param enabled: If True, the implementation is permitted to
+            aggressively cache directory structure and file information.
+            Caching such information can speed up many operations,
+            particularly for network based filesystems. The downside of
+            caching is that changes made to directories or files outside
+            of this interface may not be picked up immediately.
 
         """
         pass
@@ -203,17 +211,17 @@ class FS(object):
     def close(self):
         """Close the filesystem. This will perform any shutdown related
         operations required. This method will be called automatically when
-        the filesystem object is garbage collected, but it is good practice
-        to call it explicitly so that any attached resourced are freed when they
-        are no longer required.
+        filesystem object is garbage collected or leaves context manager,
+        but it is good practice to call it explicitly so that any attached
+        resources are freed when they are no longer required.
 
         """
         self.closed = True
 
     def __getstate__(self):
-        #  Locks can't be pickled, so instead we just indicate the
-        #  type of lock that should be there.  None == no lock,
-        #  True == a proper lock, False == a dummy lock.
+        # Locks can't be pickled, so instead we just indicate the type of
+        # lock that should be there.
+        # None == no lock, True == a proper lock, False == a dummy lock.
         state = self.__dict__.copy()
         lock = state.get("_lock", None)
         if lock is not None:
@@ -233,37 +241,42 @@ class FS(object):
                 self._lock = DummyLock()
 
     def getmeta(self, meta_name, default=NoDefaultMeta):
-        """Retrieve a meta value associated with an FS object.
+        """Retrieve a particular meta value associated with the filesystem.
 
-        Meta values are a way for an FS implementation to report potentially
-        useful information associated with the file system.
+        Meta values are a way for FS implementation to report potentially
+        useful information associated with the filesystem.
 
         A meta key is a lower case string with no spaces. Meta keys may also
-        be grouped in namespaces in a dotted notation, e.g. 'atomic.namespaces'.
+        be grouped in namespaces in a dotted notation, e.g. 'atomic.rename'.
         FS implementations aren't obliged to return any meta values, but the
         following are common:
 
-         * *read_only* True if the file system cannot be modified
+         * *read_only* True if the filesystem cannot be modified
          * *thread_safe* True if the implementation is thread safe
-         * *network* True if the file system requires network access
-         * *unicode_paths* True if the file system supports unicode paths
-         * *case_insensitive_paths* True if the file system ignores the case of paths
+         * *network* True if the filesystem requires network access
+         * *unicode_paths* True if the filesystem supports unicode paths
+         * *case_insensitive_paths* True if the filesystem ignores case of paths
          * *atomic.makedir* True if making a directory is an atomic operation
-         * *atomic.rename* True if rename is an atomic operation, (and not implemented as a copy followed by a delete)
-         * *atomic.setcontents* True if the implementation supports setting the contents of a file as an atomic operation (without opening a file)
-         * *free_space* The free space (in bytes) available on the file system
-         * *total_space* The total space (in bytes) available on the file system
+         * *atomic.rename* True if rename is an atomic operation
+         (not implemented as a copy followed by a delete)
+         * *atomic.setcontents* True if the implementation supports setting
+         contents of a file as an atomic operation (without opening a file)
+         * *free_space* the free space (in bytes) available on the filesystem
+         * *total_space* the total space (in bytes) available on the filesystem
          * *virtual* True if the filesystem defers to other filesystems
-         * *invalid_path_chars* A string containing characters that may not be used in paths
+         * *invalid_path_chars* a string containing characters that may not
+         be used in paths
 
-        FS implementations may expose non-generic meta data through a self-named namespace. e.g. ``"somefs.some_meta"``
+        FS implementations may expose non-generic meta data through a self-named
+        namespace. e.g. ``"somefs.some_meta"``
 
-        Since no meta value is guaranteed to exist, it is advisable to always supply a
-        default value to ``getmeta``.
+        Since no meta value is guaranteed to exist, it is advisable to always
+        supply a default value to ``getmeta``.
 
-        :param meta_name: The name of the meta value to retrieve
-        :param default: An option default to return, if the meta value isn't present
-        :raises `fs.errors.NoMetaError`: If specified meta value is not present, and there is no default
+        :param meta_name: name of the meta value to retrieve
+        :param default: a default value to return, if the meta value isn't present
+        :raises `fs.errors.NoMetaError`: if specified, meta value is not present,
+            and there is no default
 
         """
         if meta_name not in self._meta:
@@ -273,9 +286,9 @@ class FS(object):
         return self._meta[meta_name]
 
     def hasmeta(self, meta_name):
-        """Check that a meta value is supported
+        """Check that a meta value is supported.
 
-        :param meta_name: The name of a meta value to check
+        :param meta_name: name of a meta value to check
         :rtype: bool
 
         """
@@ -286,14 +299,17 @@ class FS(object):
         return True
 
     def validatepath(self, path):
-        """Validate an fs path, throws an :class:`~fs.errors.InvalidPathError` exception if validation fails.
+        """Validate a path, and throw an :class:`~fs.errors.InvalidPathError`
+        exception if validation fails.
 
-        A path is invalid if it fails to map to a path on the underlaying filesystem. The default
-        implementation checks for the presence of any of the characters in the meta value 'invalid_path_chars',
+        A path is invalid if it fails to map to a path on the underlaying
+        filesystem. The default implementation checks for the presence of
+        any of the characters in the meta value 'invalid_path_chars',
         but implementations may have other requirements for paths.
 
-        :param path: an fs path to validatepath
-        :raises `fs.errors.InvalidPathError`: if `path` does not map on to a valid path on this filesystem
+        :param path: a path in the filesystem to validate
+        :raises `fs.errors.InvalidPathError`: if `path` does not map to
+            a valid path on this filesystem
 
         """
         invalid_chars = self.getmeta('invalid_path_chars', default=None)
@@ -305,9 +321,11 @@ class FS(object):
                 raise InvalidCharsInPathError(path)
 
     def isvalidpath(self, path):
-        """Check if a path is valid on this filesystem
+        """Check if a path is valid on this filesystem.
 
-        :param path: an fs path
+        :param path: a path in the filesystem to validate
+        :type path: string
+        :rtype: bool
 
         """
         try:
@@ -318,17 +336,19 @@ class FS(object):
             return True
 
     def getsyspath(self, path, allow_none=False):
-        """Returns the system path (a path recognized by the OS) if one is present.
+        """Provide the system path (a path recognized by the OS) to a given
+        path as unicode string, if one is present.
 
-        If the path does not map to a system path (and `allow_none` is False)
-        then a NoSysPathError exception is thrown.  Otherwise, the system
-        path will be returned as a unicode string.
+        If the path does not map to a system path, either a NoSysPathError
+        exception is thrown (if `allow_none` is False) or None is returned
+        (if `allow_none` is True).
 
         :param path: a path within the filesystem
-        :param allow_none: if True, this method will return None when there is no system path,
-            rather than raising NoSysPathError
+        :param allow_none: if True, this method will return None, when
+            there is no system path, rather than raising NoSysPathError
         :type allow_none: bool
-        :raises `fs.errors.NoSysPathError`: if the path does not map on to a system path, and allow_none is set to False (default)
+        :raises `fs.errors.NoSysPathError`: if the path does not map on to
+            a system path, and allow_none is False (default)
         :rtype: unicode
 
         """
@@ -337,7 +357,8 @@ class FS(object):
         return None
 
     def hassyspath(self, path):
-        """Check if the path maps to a system path (a path recognized by the OS).
+        """Check if the given path maps to a system path (a path recognized
+        by the OS).
 
         :param path: path to check
         :returns: True if `path` maps to a system path
@@ -347,17 +368,19 @@ class FS(object):
         return self.getsyspath(path, allow_none=True) is not None
 
     def getpathurl(self, path, allow_none=False):
-        """Returns a url that corresponds to the given path, if one exists.
+        """Provide a URL unicode string that corresponds to the given path,
+        if one exists.
 
-        If the path does not have an equivalent URL form (and allow_none is False)
-        then a :class:`~fs.errors.NoPathURLError` exception is thrown. Otherwise the URL will be
-        returns as an unicode string.
+        If the path does not have an equivalent URL form, either a
+        :class:`~fs.errors.NoPathURLError` exception is thrown (if allow_none
+        is False) or simply None is returned (if allow_none is True).
 
         :param path: a path within the filesystem
-        :param allow_none: if true, this method can return None if there is no
-            URL form of the given path
+        :param allow_none: if True, this method can return None if there
+            is no URL form of the given path
         :type allow_none: bool
-        :raises `fs.errors.NoPathURLError`: If no URL form exists, and allow_none is False (the default)
+        :raises `fs.errors.NoPathURLError`: If no URL form exists, and
+            allow_none is False (the default)
         :rtype: unicode
 
         """
@@ -366,7 +389,7 @@ class FS(object):
         return None
 
     def haspathurl(self, path):
-        """Check if the path has an equivalent URL form
+        """Check if the given path has an equivalent URL form.
 
         :param path: path to check
         :returns: True if `path` has a URL form
@@ -375,10 +398,11 @@ class FS(object):
         """
         return self.getpathurl(path, allow_none=True) is not None
 
-    def open(self, path, mode='r', buffering=-1, encoding=None, errors=None, newline=None, line_buffering=False, **kwargs):
-        """Open a the given path as a file-like object.
+    def open(self, path, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None, line_buffering=False, **kwargs):
+        """Open the given path as a file-like object.
 
-        :param path: a path to file that should be opened
+        :param path: a path within the filesystem that should be opened
         :type path: string
         :param mode: mode of file to open, identical to the mode string used
             in 'file' and 'open' builtins
@@ -389,21 +413,24 @@ class FS(object):
 
         :rtype: a file-like object
 
-        :raises `fs.errors.ParentDirectoryMissingError`: if an intermediate directory is missing
-        :raises `fs.errors.ResourceInvalidError`: if an intermediate directory is an file
+        :raises `fs.errors.ParentDirectoryMissingError`: if an intermediate
+            directory is missing
+        :raises `fs.errors.ResourceInvalidError`: if an intermediate component
+            is not a directory
         :raises `fs.errors.ResourceNotFoundError`: if the path is not found
 
         """
         raise UnsupportedError("open file")
 
-    def safeopen(self, path, mode='r', buffering=-1, encoding=None, errors=None, newline=None, line_buffering=False, **kwargs):
+    def safeopen(self, path, mode='r', buffering=-1, encoding=None,
+                 errors=None, newline=None, line_buffering=False, **kwargs):
         """Like :py:meth:`~fs.base.FS.open`, but returns a
         :py:class:`~fs.base.NullFile` if the file could not be opened.
 
-        A ``NullFile`` is a dummy file which has all the methods of a file-like object,
-        but contains no data.
+        A ``NullFile`` is a dummy file which has all the methods of a
+        file-like object, but contains no data.
 
-        :param path: a path to file that should be opened
+        :param path: a path within the filesystem that should be opened
         :type path: string
         :param mode: mode of file to open, identical to the mode string used
             in 'file' and 'open' builtins
@@ -416,7 +443,9 @@ class FS(object):
 
         """
         try:
-            f = self.open(path, mode=mode, buffering=buffering, encoding=encoding, errors=errors, newline=newline, line_buffering=line_buffering, **kwargs)
+            f = self.open(path, mode=mode, buffering=buffering,
+                          encoding=encoding, errors=errors, newline=newline,
+                          line_buffering=line_buffering, **kwargs)
         except ResourceNotFoundError:
             return NullFile()
         return f
@@ -424,7 +453,7 @@ class FS(object):
     def exists(self, path):
         """Check if a path references a valid resource.
 
-        :param path: A path in the filesystem
+        :param path: a path within the filesystem
         :type path: string
 
         :rtype: bool
@@ -435,7 +464,7 @@ class FS(object):
     def isdir(self, path):
         """Check if a path references a directory.
 
-        :param path: a path in the filesystem
+        :param path: a path within the filesystem
         :type path: string
 
         :rtype: bool
@@ -446,7 +475,7 @@ class FS(object):
     def isfile(self, path):
         """Check if a path references a file.
 
-        :param path: a path in the filesystem
+        :param path: a path within the filesystem
         :type path: string
 
         :rtype: bool
@@ -455,69 +484,76 @@ class FS(object):
         raise UnsupportedError("check for file")
 
     def __iter__(self):
-        """ Iterates over paths returned by :py:meth:`~fs.base.listdir` method with default params. """
+        """Iterate over paths returned by :py:meth:`~fs.base.listdir` method
+        with default params.
+        """
         for f in self.listdir():
             yield f
 
-    def listdir(self,
-                path="./",
-                wildcard=None,
-                full=False,
-                absolute=False,
-                dirs_only=False,
-                files_only=False):
-        """Lists the the files and directories under a given path.
+    def listdir(self, path="./", wildcard=None, full=False, absolute=False,
+                dirs_only=False, files_only=False):
+        """List the files and directories under a given path.
 
         The directory contents are returned as a list of unicode paths.
 
         :param path: root of the path to list
         :type path: string
-        :param wildcard: Only returns paths that match this wildcard
-        :type wildcard: string containing a wildcard, or a callable that accepts a path and returns a boolean
-        :param full: returns full paths (relative to the root)
+        :param wildcard: only return paths that match this wildcard
+        :type wildcard: string containing a wildcard, or a callable that
+            accepts a path and returns a boolean
+        :param full: return full paths (relative to the root)
         :type full: bool
-        :param absolute: returns absolute paths (paths beginning with /)
+        :param absolute: return absolute paths (paths beginning with /)
         :type absolute: bool
         :param dirs_only: if True, only return directories
         :type dirs_only: bool
         :param files_only: if True, only return files
         :type files_only: bool
 
-        :rtype: iterable of paths
+        :rtype: list of unicode strings
 
-        :raises `fs.errors.ParentDirectoryMissingError`: if an intermediate directory is missing
-        :raises `fs.errors.ResourceInvalidError`: if the path exists, but is not a directory
+        :raises `fs.errors.ParentDirectoryMissingError`: if an intermediate
+            directory is missing
+        :raises `fs.errors.ResourceInvalidError`: if the path exists, but is
+            not a directory
         :raises `fs.errors.ResourceNotFoundError`: if the path is not found
 
         """
         raise UnsupportedError("list directory")
 
-    def listdirinfo(self,
-                    path="./",
-                    wildcard=None,
-                    full=False,
-                    absolute=False,
-                    dirs_only=False,
-                    files_only=False):
-        """Retrieves a list of paths and path info under a given path.
+    def listdirinfo(self, path="./", wildcard=None, full=False, absolute=False,
+                    dirs_only=False, files_only=False):
+        """List the files and directories (and corresponding file info) under
+        a given path.
 
         This method behaves like listdir() but instead of just returning
         the name of each item in the directory, it returns a tuple of the
-        name and the info dict as returned by getinfo.
+        name and the info dict as returned by getinfo().
 
-        This method may be more efficient than calling
-        :py:meth:`~fs.base.FS.getinfo` on each individual item returned by :py:meth:`~fs.base.FS.listdir`, particularly
-        for network based filesystems.
+        This method may be more efficient than calling :py:meth:`~fs.base.FS.getinfo`
+        on each individual item returned by :py:meth:`~fs.base.FS.listdir`,
+        particularly for network based filesystems.
 
         :param path: root of the path to list
-        :param wildcard: filter paths that match this wildcard
+        :param wildcard: only return paths that match this wildcard
+        :type wildcard: string containing a wildcard, or a callable that
+            accepts a path and returns a boolean
+        :param full: return full paths (relative to the root)
+        :type full: bool
+        :param absolute: return absolute paths (paths beginning with /)
+        :type absolute: bool
         :param dirs_only: only retrieve directories
         :type dirs_only: bool
         :param files_only: only retrieve files
         :type files_only: bool
 
-        :raises `fs.errors.ResourceNotFoundError`: If the path is not found
-        :raises `fs.errors.ResourceInvalidError`: If the path exists, but is not a directory
+        :rtype: list of tuples (unicode string, dict)
+
+        :raises `fs.errors.ParentDirectoryMissingError`: if an intermediate
+            directory is missing
+        :raises `fs.errors.ResourceInvalidError`: if the path exists, but is
+            not a directory
+        :raises `fs.errors.ResourceNotFoundError`: if the path is not found
 
         """
         path = normpath(path)
@@ -532,21 +568,12 @@ class FS(object):
                 return {}
 
         return [(p, getinfo(p))
-                for p in self.listdir(path,
-                                      wildcard=wildcard,
-                                      full=full,
-                                      absolute=absolute,
-                                      dirs_only=dirs_only,
-                                      files_only=files_only)]
+                for p in self.listdir(path, wildcard=wildcard,
+                                      full=full, absolute=absolute,
+                                      dirs_only=dirs_only, files_only=files_only)]
 
-    def _listdir_helper(self,
-                        path,
-                        entries,
-                        wildcard=None,
-                        full=False,
-                        absolute=False,
-                        dirs_only=False,
-                        files_only=False):
+    def _listdir_helper(self, path, entries, wildcard=None, full=False,
+                        absolute=False, dirs_only=False, files_only=False):
         """A helper method called by listdir method that applies filtering.
 
         Given the path to a directory and a list of the names of entries within
@@ -557,7 +584,7 @@ class FS(object):
         """
         path = normpath(path)
         if dirs_only and files_only:
-            raise ValueError("dirs_only and files_only can not both be True")
+            raise ValueError("dirs_only and files_only cannot both be True")
 
         if wildcard is not None:
             if not callable(wildcard):
@@ -580,62 +607,51 @@ class FS(object):
 
         return entries
 
-    def ilistdir(self,
-                 path="./",
-                 wildcard=None,
-                 full=False,
-                 absolute=False,
-                 dirs_only=False,
-                 files_only=False):
-        """Generator yielding the files and directories under a given path.
+    def ilistdir(self, path="./", wildcard=None, full=False, absolute=False,
+                 dirs_only=False, files_only=False):
+        """Yield the files and directories under a given path.
 
-        This method behaves identically to :py:meth:`fs.base.FS.listdir` but returns an generator
-        instead of a list.  Depending on the filesystem this may be more
-        efficient than calling :py:meth:`fs.base.FS.listdir` and iterating over the resulting list.
+        This method behaves identically to :py:meth:`fs.base.FS.listdir` but
+        returns a generator instead of a list. Depending on the filesystem this
+        may be more efficient than calling :py:meth:`fs.base.FS.listdir` and
+        iterating over the resulting list.
 
         """
-        return iter(self.listdir(path,
-                                 wildcard=wildcard,
-                                 full=full,
-                                 absolute=absolute,
-                                 dirs_only=dirs_only,
-                                 files_only=files_only))
+        return iter(self.listdir(path, wildcard=wildcard,
+                                 full=full, absolute=absolute,
+                                 dirs_only=dirs_only, files_only=files_only))
 
-    def ilistdirinfo(self,
-                     path="./",
-                     wildcard=None,
-                     full=False,
-                     absolute=False,
-                     dirs_only=False,
-                     files_only=False):
-        """Generator yielding paths and path info under a given path.
+    def ilistdirinfo(self, path="./", wildcard=None, full=False, absolute=False,
+                     dirs_only=False, files_only=False):
+        """Yield the files and directories (and corresponding path info)
+        under a given path.
 
-        This method behaves identically to :py:meth:`~fs.base.listdirinfo` but returns an generator
-        instead of a list.  Depending on the filesystem this may be more
-        efficient than calling :py:meth:`~fs.base.listdirinfo` and iterating over the resulting
-        list.
+        This method behaves identically to :py:meth:`~fs.base.listdirinfo` but
+        returns a generator instead of a list. Depending on the filesystem this
+        may be more efficient than calling :py:meth:`~fs.base.listdirinfo` and
+        iterating over the resulting list.
 
         """
-        return iter(self.listdirinfo(path,
-                                     wildcard,
-                                     full,
-                                     absolute,
-                                     dirs_only,
-                                     files_only))
+        return iter(self.listdirinfo(path, wildcard, full, absolute,
+                                     dirs_only, files_only))
 
     def makedir(self, path, recursive=False, allow_recreate=False):
-        """Make a directory on the filesystem.
+        """Create a directory on the filesystem.
 
         :param path: path of directory
         :type path: string
-        :param recursive: if True, any intermediate directories will also be created
+        :param recursive: if True, intermediate directories will also be
+            created if needed
         :type recursive: bool
-        :param allow_recreate: if True, re-creating a directory wont be an error
+        :param allow_recreate: if True, existing directory will be accepted
         :type allow_create: bool
 
-        :raises `fs.errors.DestinationExistsError`: if the path is already a directory, and allow_recreate is False
-        :raises `fs.errors.ParentDirectoryMissingError`: if a containing directory is missing and recursive is False
-        :raises `fs.errors.ResourceInvalidError`: if a path is an existing file
+        :raises `fs.errors.DestinationExistsError`: if the path is already a
+            directory, and allow_recreate is False
+        :raises `fs.errors.ParentDirectoryMissingError`: if a containing
+            directory is missing and recursive is False
+        :raises `fs.errors.ResourceInvalidError`: if the path exists, but is
+            not a directory
         :raises `fs.errors.ResourceNotFoundError`: if the path is not found
 
         """
@@ -644,10 +660,11 @@ class FS(object):
     def remove(self, path):
         """Remove a file from the filesystem.
 
-        :param path: Path of the resource to remove
+        :param path: path of the resource to remove
         :type path: string
 
-        :raises `fs.errors.ParentDirectoryMissingError`: if an intermediate directory is missing
+        :raises `fs.errors.ParentDirectoryMissingError`: if an intermediate
+            directory is missing
         :raises `fs.errors.ResourceInvalidError`: if the path is a directory
         :raises `fs.errors.ResourceNotFoundError`: if the path does not exist
 
@@ -655,7 +672,7 @@ class FS(object):
         raise UnsupportedError("remove resource")
 
     def removedir(self, path, recursive=False, force=False):
-        """Remove a directory from the filesystem
+        """Remove a directory from the filesystem.
 
         :param path: path of the directory to remove
         :type path: string
@@ -664,8 +681,10 @@ class FS(object):
         :param force: if True, any directory contents will be removed
         :type force: bool
 
-        :raises `fs.errors.DirectoryNotEmptyError`: if the directory is not empty and force is False
-        :raises `fs.errors.ParentDirectoryMissingError`: if an intermediate directory is missing
+        :raises `fs.errors.DirectoryNotEmptyError`: if the directory is not
+            empty and force is False
+        :raises `fs.errors.ParentDirectoryMissingError`: if an intermediate
+            directory is missing
         :raises `fs.errors.ResourceInvalidError`: if the path is not a directory
         :raises `fs.errors.ResourceNotFoundError`: if the path does not exist
 
@@ -673,17 +692,17 @@ class FS(object):
         raise UnsupportedError("remove directory")
 
     def rename(self, src, dst):
-        """Renames a file or directory
+        """Rename a file or directory.
 
         :param src: path to rename
         :type src: string
-        :param dst: new name
+        :param dst: new name to rename to
         :type dst: string
 
         :raises ParentDirectoryMissingError: if a containing directory is missing
-        :raises ResourceInvalidError: if the path or a parent path is not a
-            directory or src is a parent of dst or one of src or dst is a dir
-            and the other don't
+        :raises ResourceInvalidError: if the path or a parent path is not
+            a directory, or src is a parent of dst, or one of src or dst is
+            a directory and the other is not
         :raises ResourceNotFoundError: if the src path does not exist
 
         """
@@ -691,13 +710,15 @@ class FS(object):
 
     @convert_os_errors
     def settimes(self, path, accessed_time=None, modified_time=None):
-        """Set the accessed time and modified time of a file
+        """Set the accessed time and modified time of a file.
 
         :param path: path to a file
         :type path: string
-        :param accessed_time: the datetime the file was accessed (defaults to current time)
+        :param accessed_time: datetime of when file was last accessed
+            (defaults to current time)
         :type accessed_time: datetime
-        :param modified_time: the datetime the file was modified (defaults to current time)
+        :param modified_time: datetime of when file was last modified
+            (defaults to current time)
         :type modified_time: datetime
 
         """
@@ -718,22 +739,23 @@ class FS(object):
                 raise UnsupportedError("settimes")
 
     def getinfo(self, path):
-        """Returns information for a path as a dictionary. The exact content of
+        """Retrieve information for a path as a dictionary. The exact content of
         this dictionary will vary depending on the implementation, but will
         likely include a few common values. The following values will be found
         in info dictionaries for most implementations:
 
          * "size" - Number of bytes used to store the file or directory
-         * "created_time" - A datetime object containing the time the resource was created
-         * "accessed_time" - A datetime object containing the time the resource was last accessed
-         * "modified_time" - A datetime object containing the time the resource was modified
+         * "created_time" - A datetime object of when the resource was created
+         * "accessed_time" - A datetime object of when the resource was last accessed
+         * "modified_time" - A datetime object of when the resource was last modified
 
         :param path: a path to retrieve information for
         :type path: string
 
         :rtype: dict
 
-        :raises `fs.errors.ParentDirectoryMissingError`: if an intermediate directory is missing
+        :raises `fs.errors.ParentDirectoryMissingError`: if an intermediate
+            directory is missing
         :raises `fs.errors.ResourceInvalidError`: if the path is not a directory
         :raises `fs.errors.ResourceNotFoundError`: if the path does not exist
 
@@ -741,11 +763,12 @@ class FS(object):
         raise UnsupportedError("get resource info")
 
     def getinfokeys(self, path, *keys):
-        """Get specified keys from info dict, as returned from `getinfo`. The returned dictionary may
-        not contain all the keys that were asked for, if they aren't available.
+        """Retrieve specified keys from info dict, as returned from `getinfo`.
+        The returned dictionary may not contain all the keys that were asked
+        for, if they aren't available.
 
-        This method allows a filesystem to potentially provide a faster way of retrieving these info values if you
-        are only interested in a subset of them.
+        This method allows a filesystem to potentially provide a faster way of
+        retrieving these info values if you are only interested in a subset of them.
 
         :param path: a path to retrieve information for
         :param keys: the info keys you would like to retrieve
@@ -757,10 +780,10 @@ class FS(object):
         return dict((k, info[k]) for k in keys if k in info)
 
     def desc(self, path):
-        """Returns short descriptive text regarding a path. Intended mainly as
-        a debugging aid.
+        """Retrieve short descriptive text regarding a path. Intended mainly
+        as a debugging aid.
 
-        :param path: A path to describe
+        :param path: a path to describe
         :rtype: str
 
         """
@@ -773,13 +796,13 @@ class FS(object):
         return sys_path
 
     def getcontents(self, path, mode='rb', encoding=None, errors=None, newline=None):
-        """Returns the contents of a file as a string.
+        """Retrieve the contents of a file as a string.
 
-        :param path: A path of file to read
-        :param mode: Mode to open file with (should be 'rb' for binary or 't' for text)
-        :param encoding: Encoding to use when reading contents in text mode
-        :param errors: Unicode errors parameter if text mode is use
-        :param newline: Newlines parameter for text mode decoding
+        :param path: a path of file to read
+        :param mode: mode to open file with (should be 'rb' for binary or 't' for text)
+        :param encoding: encoding, if reading contents in text mode
+        :param errors: unicode errors parameter, if in text mode
+        :param newline: newlines parameter, if decoding in text mode
         :rtype: str
         :returns: file contents
 
@@ -795,14 +818,8 @@ class FS(object):
             if f is not None:
                 f.close()
 
-    def _setcontents(self,
-                     path,
-                     data,
-                     encoding=None,
-                     errors=None,
-                     chunk_size=1024 * 64,
-                     progress_callback=None,
-                     finished_callback=None):
+    def _setcontents(self, path, data, encoding=None, errors=None, chunk_size=64*1024,
+                     progress_callback=None, finished_callback=None):
         """Does the work of setcontents. Factored out, so that `setcontents_async` can use it"""
         if progress_callback is None:
             progress_callback = lambda bytes_written: None
@@ -848,43 +865,49 @@ class FS(object):
         finished_callback()
         return bytes_written
 
-    def setcontents(self, path, data=b'', encoding=None, errors=None, chunk_size=1024 * 64):
-        """A convenience method to create a new file from a string or file-like object
+    def setcontents(self, path, data=b'', encoding=None, errors=None,
+                    chunk_size=64*1024):
+        """Create a new file from a string or file-like object.
 
         :param path: a path of the file to create
-        :param data: a string or bytes object containing the contents for the new file
-        :param encoding: if `data` is a file open in text mode, or a text string, then use this `encoding` to write to the destination file
-        :param errors: if `data` is a file open in text mode or a text string, then use `errors` when opening the destination file
-        :param chunk_size: Number of bytes to read in a chunk, if the implementation has to resort to a read / copy loop
+        :param data: a string or bytes object containing the contents for
+            the new file
+        :param encoding: if `data` is a file open in text mode, or a text string,
+            use this `encoding` to write to the destination file
+        :param errors: if `data` is a file open in text mode or a text string,
+            use `errors` when opening the destination file
+        :param chunk_size: size of chunks to use when copying, if a simple copy
+            is required (defaults to 64K)
 
         """
-        return self._setcontents(path, data, encoding=encoding, errors=errors, chunk_size=1024 * 64)
+        return self._setcontents(path, data, encoding=encoding, errors=errors,
+                                 chunk_size=64*1024)
 
-    def setcontents_async(self,
-                          path,
-                          data,
-                          encoding=None,
-                          errors=None,
-                          chunk_size=1024 * 64,
-                          progress_callback=None,
-                          finished_callback=None,
-                          error_callback=None):
-        """Create a new file from a string or file-like object asynchronously
+    def setcontents_async(self, path, data, encoding=None, errors=None,
+                          chunk_size=64*1024, progress_callback=None,
+                          finished_callback=None, error_callback=None):
+        """Create a new file from a string or file-like object asynchronously.
 
-        This method returns a ``threading.Event`` object. Call the ``wait`` method on the event object
-        to block until all data has been written, or simply ignore it.
+        This method returns a ``threading.Event`` object. Call the ``wait``
+        method on the event object to block until all data has been written,
+        or simply ignore it.
 
         :param path: a path of the file to create
-        :param data: a string or a file-like object containing the contents for the new file
-        :param encoding: if `data` is a file open in text mode, or a text string, then use this `encoding` to write to the destination file
-        :param errors: if `data` is a file open in text mode or a text string, then use `errors` when opening the destination file
-        :param chunk_size: Number of bytes to read and write in a chunk
-        :param progress_callback: A function that is called periodically
-            with the number of bytes written.
-        :param finished_callback: A function that is called when all data has been written
-        :param error_callback: A function that is called with an exception
+        :param data: a string or a file-like object containing the contents
+            for the new file
+        :param encoding: if `data` is a file open in text mode, or a text string,
+            use this `encoding` to write to the destination file
+        :param errors: if `data` is a file open in text mode or a text string,
+            use `errors` when opening the destination file
+        :param chunk_size: size of chunks to use when copying, if a simple copy
+            is required (defaults to 64K)
+        :param progress_callback: a function that is called periodically
+            with the number of bytes written so far.
+        :param finished_callback: a function that is called when all data has
+            been written
+        :param error_callback: a function that is called with an exception
             object if any error occurs during the copy process.
-        :returns: An event object that is set when the copy is complete, call
+        :returns: an event object that is set when the copy is complete, call
             the `wait` method of this object to block until the data is written
 
         """
@@ -893,11 +916,8 @@ class FS(object):
 
         def do_setcontents():
             try:
-                self._setcontents(path,
-                                  data,
-                                  encoding=encoding,
-                                  errors=errors,
-                                  chunk_size=1024 * 64,
+                self._setcontents(path, data, encoding=encoding, errors=errors,
+                                  chunk_size=64*1024,
                                   progress_callback=progress_callback,
                                   finished_callback=finished_callback)
             except Exception, e:
@@ -910,10 +930,10 @@ class FS(object):
         return finished_event
 
     def createfile(self, path, wipe=False):
-        """Creates an empty file if it doesn't exist
+        """Create an empty file, if it doesn't exist.
 
         :param path: path to the file to create
-        :param wipe: if True, the contents of the file will be erased
+        :param wipe: if True, contents of the existing file will be erased
 
         """
         with self._lock:
@@ -927,12 +947,12 @@ class FS(object):
                     f.close()
 
     def opendir(self, path):
-        """Opens a directory and returns a FS object representing its contents.
+        """Open a directory and returns a FS object representing its contents.
 
-        :param path: path to directory to open
+        :param path: path to a directory to open
         :type path: string
 
-        :return: the opened dir
+        :return: the opened directory
         :rtype: an FS object
 
         """
@@ -944,28 +964,27 @@ class FS(object):
             raise ResourceInvalidError("path should reference a directory")
         return SubFS(self, path)
 
-    def walk(self,
-             path="/",
-             wildcard=None,
-             dir_wildcard=None,
-             search="breadth",
-             ignore_errors=False):
-        """Walks a directory tree and yields the root path and contents.
-        Yields a tuple of the path of each directory and a list of its file
-        contents.
+    def walk(self, path="/", wildcard=None, dir_wildcard=None,
+             search="breadth", ignore_errors=False):
+        """Walk a directory tree and yield the root path and contents. Yield
+        a tuple of the path of each directory and a list of its file contents.
 
         :param path: root path to start walking
         :type path: string
         :param wildcard: if given, only return files that match this wildcard
-        :type wildcard: a string containing a wildcard (e.g. `*.txt`) or a callable that takes the file path and returns a boolean
-        :param dir_wildcard: if given, only walk directories that match the wildcard
-        :type dir_wildcard: a string containing a wildcard (e.g. `*.txt`) or a callable that takes the directory name and returns a boolean
-        :param search: a string identifying the method used to walk the directories. There are two such methods:
+        :type wildcard: a string containing a wildcard (e.g. `*.txt`) or
+            a callable that takes a path and returns a boolean
+        :param dir_wildcard: if given, only walk directories that match
+            the wildcard
+        :type dir_wildcard: a string containing a wildcard (e.g. `*.txt`) or
+            a callable that takes a directory name and returns a boolean
+        :param search: a string identifying the method used to walk the
+            directories, such as
 
              * ``"breadth"`` yields paths in the top directories first
              * ``"depth"`` yields the deepest paths first
 
-        :param ignore_errors: ignore any errors reading the directory
+        :param ignore_errors: ignore any errors when reading the directory
         :type ignore_errors: bool
 
         :rtype: iterator of (current_path, paths)
@@ -1017,7 +1036,8 @@ class FS(object):
                         if wildcard(filename):
                             paths_append(filename)
                 except ResourceNotFoundError:
-                    # Could happen if another thread / process deletes something whilst we are walking
+                    # Could happen if another thread / process deletes
+                    # something whilst we are walking
                     pass
 
                 yield (current_path, paths)
@@ -1030,7 +1050,8 @@ class FS(object):
                         for p in recurse(path):
                             yield p
                 except ResourceNotFoundError:
-                    # Could happen if another thread / process deletes something whilst we are walking
+                    # Could happen if another thread / process deletes
+                    # something whilst we are walking
                     pass
                 yield (recurse_path, listdir(recurse_path, wildcard=wildcard, files_only=True))
 
@@ -1040,26 +1061,26 @@ class FS(object):
         else:
             raise ValueError("Search should be 'breadth' or 'depth'")
 
-    def walkfiles(self,
-                  path="/",
-                  wildcard=None,
-                  dir_wildcard=None,
-                  search="breadth",
-                  ignore_errors=False):
-        """Like the 'walk' method, but just yields file paths.
+    def walkfiles(self, path="/", wildcard=None, dir_wildcard=None,
+                  search="breadth", ignore_errors=False):
+        """Like the 'walk' method, but yield only file paths.
 
         :param path: root path to start walking
         :type path: string
         :param wildcard: if given, only return files that match this wildcard
-        :type wildcard: A string containing a wildcard (e.g. `*.txt`) or a callable that takes the file path and returns a boolean
-        :param dir_wildcard: if given, only walk directories that match the wildcard
-        :type dir_wildcard: A string containing a wildcard (e.g. `*.txt`) or a callable that takes the directory name and returns a boolean
-        :param search: a string identifying the method used to walk the directories. There are two such methods:
+        :type wildcard: a string containing a wildcard (e.g. `*.txt`) or
+            a callable that takes a file path and returns a boolean
+        :param dir_wildcard: if given, only walk directories that match
+            the wildcard
+        :type dir_wildcard: a string containing a wildcard (e.g. `*.txt`) or
+            a callable that takes a directory name and returns a boolean
+        :param search: a string identifying the method used to walk the
+            directories, such as
 
              * ``"breadth"`` yields paths in the top directories first
              * ``"depth"`` yields the deepest paths first
 
-        :param ignore_errors: ignore any errors reading the directory
+        :param ignore_errors: ignore any errors when reading the directory
         :type ignore_errors: bool
 
         :rtype: iterator of file paths
@@ -1069,33 +1090,33 @@ class FS(object):
             for f in files:
                 yield pathcombine(path, f)
 
-    def walkdirs(self,
-                 path="/",
-                 wildcard=None,
-                 search="breadth",
+    def walkdirs(self, path="/", wildcard=None, search="breadth",
                  ignore_errors=False):
-        """Like the 'walk' method but yields directories.
+        """Like the 'walk' method but yield only directories.
 
         :param path: root path to start walking
         :type path: string
-        :param wildcard: if given, only return directories that match this wildcard
-        :type wildcard: A string containing a wildcard (e.g. `*.txt`) or a callable that takes the directory name and returns a boolean
-        :param search: a string identifying the method used to walk the directories. There are two such methods:
+        :param wildcard: if given, only return directories that match
+            this wildcard
+        :type wildcard: a string containing a wildcard (e.g. `*.txt`) or
+            a callable that takes a directory name and returns a boolean
+        :param search: a string identifying the method used to walk the
+            directories, such as
 
              * ``"breadth"`` yields paths in the top directories first
              * ``"depth"`` yields the deepest paths first
 
-        :param ignore_errors: ignore any errors reading the directory
+        :param ignore_errors: ignore any errors when reading the directory
         :type ignore_errors: bool
 
-        :rtype: iterator of dir paths
+        :rtype: iterator of directory paths
 
         """
         for p, _files in self.walk(path, dir_wildcard=wildcard, search=search, ignore_errors=ignore_errors):
             yield p
 
     def getsize(self, path):
-        """Returns the size (in bytes) of a resource.
+        """Return the size (in bytes) of a resource.
 
         :param path: a path to the resource
         :type path: string
@@ -1110,19 +1131,18 @@ class FS(object):
             raise OperationFailedError("get size of resource", path)
         return size
 
-    def copy(self, src, dst, overwrite=False, chunk_size=1024 * 64):
-        """Copies a file from src to dst.
+    def copy(self, src, dst, overwrite=False, chunk_size=64*1024):
+        """Copy a file from one location to another.
 
         :param src: the source path
         :type src: string
         :param dst: the destination path
         :type dst: string
-        :param overwrite: if True, then an existing file at the destination may
-            be overwritten; If False then DestinationExistsError
-            will be raised.
+        :param overwrite: if True, an existing file at the destination may
+            be overwritten, if False, DestinationExistsError will be raised
         :type overwrite: bool
-        :param chunk_size: size of chunks to use if a simple copy is required
-            (defaults to 64K).
+        :param chunk_size: size of chunks to use when copying, if a simple
+            copy is required (defaults to 64K)
         :type chunk_size: bool
 
         """
@@ -1169,21 +1189,22 @@ class FS(object):
         shutil.move(src_syspath, dst_syspath)
 
 
-    def move(self, src, dst, overwrite=False, chunk_size=16384):
-        """moves a file from one location to another.
+    def move(self, src, dst, overwrite=False, chunk_size=16*1024):
+        """Move a file from one location to another.
 
         :param src: source path
         :type src: string
         :param dst: destination path
         :type dst: string
-        :param overwrite: When True the destination will be overwritten (if it exists),
-            otherwise a DestinationExistsError will be thrown
+        :param overwrite: if True, the destination will be overwritten
+            (if exists), otherwise a DestinationExistsError will be thrown
         :type overwrite: bool
-        :param chunk_size: Size of chunks to use when copying, if a simple copy
-            is required
+        :param chunk_size: size of chunks to use when copying, if a simple copy
+            is required (defaults to 16K)
         :type chunk_size: integer
 
-        :raise `fs.errors.DestinationExistsError`: if destination exists and `overwrite` is False
+        :raise `fs.errors.DestinationExistsError`: if destination exists and
+            `overwrite` is False
 
         """
 
@@ -1208,24 +1229,26 @@ class FS(object):
             self.copy(src, dst, overwrite=overwrite, chunk_size=chunk_size)
             self.remove(src)
 
-    def movedir(self, src, dst, overwrite=False, ignore_errors=False, chunk_size=16384):
-        """moves a directory from one location to another.
+    def movedir(self, src, dst, overwrite=False, ignore_errors=False,
+                chunk_size=16*1024):
+        """Move a directory from one location to another.
 
         :param src: source directory path
         :type src: string
         :param dst: destination directory path
         :type dst: string
-        :param overwrite: if True then any existing files in the destination
+        :param overwrite: if True, any existing files in the destination
             directory will be overwritten
         :type overwrite: bool
-        :param ignore_errors: if True then this method will ignore FSError
+        :param ignore_errors: if True, this method will ignore FSError
             exceptions when moving files
         :type ignore_errors: bool
         :param chunk_size: size of chunks to use when copying, if a simple copy
-            is required
+            is required (defaults to 16K)
         :type chunk_size: integer
 
-        :raise `fs.errors.DestinationExistsError`: if destination exists and `overwrite` is False
+        :raise `fs.errors.DestinationExistsError`: if destination exists and
+            `overwrite` is False
 
         """
         with self._lock:
@@ -1263,27 +1286,26 @@ class FS(object):
                 self.makedir(dst, allow_recreate=overwrite)
 
             for dirname, filenames in self.walk(src, search="depth"):
-
                 dst_dirname = relpath(frombase(src, abspath(dirname)))
                 dst_dirpath = pathjoin(dst, dst_dirname)
                 self.makedir(dst_dirpath, allow_recreate=True, recursive=True)
 
                 for filename in filenames:
-
                     src_filename = pathjoin(dirname, filename)
                     dst_filename = pathjoin(dst_dirpath, filename)
                     movefile(src_filename, dst_filename, overwrite=overwrite, chunk_size=chunk_size)
 
                 self.removedir(dirname)
 
-    def copydir(self, src, dst, overwrite=False, ignore_errors=False, chunk_size=16384):
-        """copies a directory from one location to another.
+    def copydir(self, src, dst, overwrite=False, ignore_errors=False,
+                chunk_size=16*1024):
+        """Copy a directory from one location to another.
 
         :param src: source directory path
         :type src: string
         :param dst: destination directory path
         :type dst: string
-        :param overwrite: if True then any existing files in the destination
+        :param overwrite: if True, any existing files in the destination
             directory will be overwritten
         :type overwrite: bool
         :param ignore_errors: if True, exceptions when copying will be ignored
@@ -1328,6 +1350,7 @@ class FS(object):
         """Check if a directory is empty (contains no files or sub-directories)
 
         :param path: a directory path
+        :type path: string
 
         :rtype: bool
 
@@ -1342,13 +1365,13 @@ class FS(object):
             return False
 
     def makeopendir(self, path, recursive=False):
-        """makes a directory (if it doesn't exist) and returns an FS object for
-        the newly created directory.
+        """Create a directory on the filesystem (or accept existing) and
+        return an FS object for the directory.
 
         :param path: path to the new directory
-        :param recursive: if True any intermediate directories will be created
+        :param recursive: if True, any intermediate directories will be created
 
-        :return: the opened dir
+        :return: the opened directory
         :rtype: an FS object
 
         """
@@ -1358,10 +1381,10 @@ class FS(object):
             return dir_fs
 
     def printtree(self, max_levels=5):
-        """Prints a tree structure of the FS object to the console
+        """Print a tree structure of the FS object to the console.
 
-        :param max_levels: The maximum sub-directories to display, defaults to
-            5. Set to None for no limit
+        :param max_levels: The maximum sub-directories to display
+            (defaults to 5, None for no limit)
 
         """
         from fs.utils import print_fs
@@ -1369,9 +1392,10 @@ class FS(object):
     tree = printtree
 
     def browse(self, hide_dotfiles=False):
-        """Displays the FS tree in a graphical window (requires wxPython)
+        """Display the FS tree in a graphical window (requires wxPython).
 
-        :param hide_dotfiles: If True, files and folders that begin with a dot will be hidden
+        :param hide_dotfiles: If True, files and folders that begin with
+            a dot will be hidden
 
         """
         from fs.browsewin import browse
@@ -1380,12 +1404,14 @@ class FS(object):
     def getmmap(self, path, read_only=False, copy=False):
         """Returns a mmap object for this path.
 
-        See http://docs.python.org/library/mmap.html for more details on the mmap module.
+        See http://docs.python.org/library/mmap.html for more details
+            on the mmap module.
 
         :param path: A path on this filesystem
-        :param read_only: If True, the mmap may not be modified
-        :param copy: If False then changes wont be written back to the file
-        :raises `fs.errors.NoMMapError`: Only paths that have a syspath can be opened as a mmap
+        :param read_only: If True, the returned mmap may not be modified afterwards
+        :param copy: If False, changes wont be written back to the file
+        :raises `fs.errors.NoMMapError`: Only paths that have a syspath can be
+            opened as a mmap
 
         """
         syspath = self.getsyspath(path, allow_none=True)
@@ -1437,5 +1463,3 @@ def flags_to_mode(flags, binary=True):
     else:
         mode += 't'
     return mode
-
-
