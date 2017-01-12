@@ -9,15 +9,13 @@ the local filesystem using Dokan on win32::
 
     http://dokan-dev.net/en/
 
-For simple usage, the function 'mount' takes an FS object and a drive letter,
-and exposes the given FS as that drive::
+For simple usage, the function 'mount' takes an FS object and a path,
+and exposes the given FS as that path::
 
     >>> from fs.memoryfs import MemoryFS
     >>> from fs.expose import dokan
     >>> fs = MemoryFS()
     >>> mp = dokan.mount(fs,"Q")
-    >>> mp.drive
-    'Q'
     >>> mp.path
     'Q:\\'
     >>> mp.unmount()
@@ -848,21 +846,14 @@ def _errno2syserrcode(eno):
     return eno
 
 
-def _normalise_drive_string(drive):
-    """Normalise drive string to a single letter."""
-    if not drive:
-        raise ValueError("invalid drive letter: %r" % (drive,))
-    if len(drive) > 3:
-        raise ValueError("invalid drive letter: %r" % (drive,))
-    if not drive[0].isalpha():
-        raise ValueError("invalid drive letter: %r" % (drive,))
-    if not ":\\".startswith(drive[1:]):
-        raise ValueError("invalid drive letter: %r" % (drive,))
-    return drive[0].upper()
+def _check_path_string(path):  # TODO Probably os.path has a better check for this...
+    """Check path string."""
+    if not path or not path[0].isalpha() or not path[1:3] == ':\\':
+        raise ValueError("invalid path: %r" % (path,))
 
 
-def mount(fs, drive, foreground=False, ready_callback=None, unmount_callback=None, **kwds):
-    """Mount the given FS at the given drive letter, using Dokan.
+def mount(fs, path, foreground=False, ready_callback=None, unmount_callback=None, **kwds):
+    """Mount the given FS at the given path, using Dokan.
 
     By default, this function spawns a new background process to manage the
     Dokan event loop.  The return value in this case is an instance of the
@@ -885,10 +876,10 @@ def mount(fs, drive, foreground=False, ready_callback=None, unmount_callback=Non
     """
     if libdokan is None:
         raise OSError("the dokan library is not available")
-    drive = _normalise_drive_string(drive)
+    _check_path_string(path)
     #  This function captures the logic of checking whether the Dokan mount
     #  is up and running.  Unfortunately I can't find a way to get this
-    #  via a callback in the Dokan API.  Instead we just check for the drive
+    #  via a callback in the Dokan API.  Instead we just check for the path
     #  in a loop, polling the mount proc to make sure it hasn't died.
     def check_alive(mp):
         if mp and mp.poll() != None:
@@ -898,7 +889,7 @@ def mount(fs, drive, foreground=False, ready_callback=None, unmount_callback=Non
             check_alive(mp)
             for _ in xrange(100):
                 try:
-                    os.stat(drive+":\\")
+                    os.stat(path)
                 except EnvironmentError, e:
                     check_alive(mp)
                     time.sleep(0.05)
@@ -917,7 +908,7 @@ def mount(fs, drive, foreground=False, ready_callback=None, unmount_callback=Non
         numthreads = kwds.pop("numthreads",0)
         flags = kwds.pop("flags",0)
         FSOperationsClass = kwds.pop("FSOperationsClass",FSOperations)
-        opts = libdokan.DOKAN_OPTIONS(drive[:1], numthreads, flags)
+        opts = libdokan.DOKAN_OPTIONS(drive, numthreads, flags)
         ops = FSOperationsClass(fs, **kwds)
         if ready_callback:
             check_thread = threading.Thread(target=check_ready)
@@ -932,7 +923,7 @@ def mount(fs, drive, foreground=False, ready_callback=None, unmount_callback=Non
     #  Running the background, spawn a subprocess and wait for it
     #  to be ready before returning.
     else:
-        mp = MountProcess(fs, drive, kwds)
+        mp = MountProcess(fs, path, kwds)
         check_ready(mp)
         if unmount_callback:
             orig_unmount = mp.unmount
@@ -943,16 +934,16 @@ def mount(fs, drive, foreground=False, ready_callback=None, unmount_callback=Non
         return mp
 
 
-def unmount(drive):
-    """Unmount the given drive.
+def unmount(path):
+    """Unmount the given path.
 
-    This function unmounts the dokan drive mounted at the given drive letter.
+    This function unmounts the dokan path mounted at the given path.
     It works but may leave dangling processes; its better to use the "unmount"
     method on the MountProcess class if you have one.
     """
-    drive = _normalise_drive_string(drive)
-    if not libdokan.DokanUnmount(drive):
-        raise OSError("filesystem could not be unmounted: %s" % (drive,))
+    _check_path_string(path)
+    if not libdokan.DokanUnmount(path):
+        raise OSError("filesystem could not be unmounted: %s" % (path,))
 
 
 class MountProcess(subprocess.Popen):
@@ -960,14 +951,14 @@ class MountProcess(subprocess.Popen):
 
     This is a subclass of subprocess.Popen, designed for easy management of
     a Dokan mount in a background process.  Rather than specifying the command
-    to execute, pass in the FS object to be mounted, the target drive letter
+    to execute, pass in the FS object to be mounted, the target path
     and a dictionary of options for the Dokan process.
 
     In order to be passed successfully to the new process, the FS object
     must be pickleable. Since win32 has no fork() this restriction is not
     likely to be lifted (see also the "multiprocessing" module)
 
-    This class has an extra attribute 'drive' giving the drive of the mounted
+    This class has an extra attribute 'path' giving the path of the mounted
     filesystem, and an extra method 'unmount' that will cleanly unmount it
     and terminate the process.
     """
@@ -980,23 +971,23 @@ class MountProcess(subprocess.Popen):
 
     unmount_timeout = 5
 
-    def __init__(self, fs, drive, dokan_opts={}, nowait=False, **kwds):
+    def __init__(self, fs, path, dokan_opts={}, nowait=False, **kwds):
         if libdokan is None:
             raise OSError("the dokan library is not available")
-        self.drive = _normalise_drive_string(drive)
-        self.path = self.drive + ":\\"
+        _check_path_string(path)
+        self.path = path
         cmd = "import cPickle; "
         cmd = cmd + "data = cPickle.loads(%s); "
         cmd = cmd + "from fs.expose.dokan import MountProcess; "
         cmd = cmd + "MountProcess._do_mount(data)"
-        cmd = cmd % (repr(cPickle.dumps((fs,drive,dokan_opts,nowait),-1)),)
+        cmd = cmd % (repr(cPickle.dumps((fs, path, dokan_opts, nowait), -1)),)
         cmd = [sys.executable,"-c",cmd]
         super(MountProcess,self).__init__(cmd,**kwds)
 
     def unmount(self):
         """Cleanly unmount the Dokan filesystem, terminating this subprocess."""
-        if not libdokan.DokanUnmount(self.drive):
-            raise OSError("the filesystem could not be unmounted: %s" %(self.drive,))
+        if not libdokan.DokanUnmount(self.path):
+            raise OSError("the filesystem could not be unmounted: %s" %(self.path,))
         self.terminate()
 
     if not hasattr(subprocess.Popen, "terminate"):
@@ -1012,14 +1003,14 @@ class MountProcess(subprocess.Popen):
     @staticmethod
     def _do_mount(data):
         """Perform the specified mount."""
-        (fs,drive,opts,nowait) = data
+        (fs,path,opts,nowait) = data
         opts["foreground"] = True
         def unmount_callback():
             fs.close()
         opts["unmount_callback"] = unmount_callback
         if nowait:
             opts["ready_callback"] = False
-        mount(fs,drive,**opts)
+        mount(fs,path,**opts)
 
 
 
@@ -1068,7 +1059,7 @@ if __name__ == "__main__":
         #fs = MemoryFS()
         fs.setcontents("test1.txt",b("test one"))
         flags = DOKAN_OPTION_DEBUG|DOKAN_OPTION_STDERR|DOKAN_OPTION_REMOVABLE
-        mount(fs, "Q", foreground=True, numthreads=1, flags=flags)
+        mount(fs, "Q:\\", foreground=True, numthreads=1, flags=flags)
         fs.close()
     finally:
         rmtree(path)
