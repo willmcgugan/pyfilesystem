@@ -32,7 +32,8 @@ except NameError:
 
 DokanVersion.restype = ULONG
 DokanVersion.argtypes = ()
-if DokanVersion() < 392:  # ths is release 0.5.3
+DOKAN_MINIMUM_COMPATIBLE_VERSION = 800  # this is release 0.8.0
+if DokanVersion() < DOKAN_MINIMUM_COMPATIBLE_VERSION:
     raise ImportError("Dokan DLL is too old")
 
 
@@ -74,12 +75,13 @@ class BY_HANDLE_FILE_INFORMATION(Structure):
 
 class DOKAN_OPTIONS(Structure):
     _fields_ = [
-	("DriveLetter", WCHAR),
-	("ThreadCount", USHORT),
-	("Options", ULONG),
-	("GlobalContext", ULONG64),
+    ("Version", USHORT),
+    ("MountPoint", LPCWSTR),
+    ("ThreadCount", USHORT),
+    ("Options", ULONG),
+    ("GlobalContext", ULONG64),
+    ("Timeout", ULONG)
     ]
-
 
 class DOKAN_FILE_INFO(Structure):
     _fields_ = [

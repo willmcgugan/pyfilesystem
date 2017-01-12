@@ -105,6 +105,8 @@ DOKAN_DRIVE_LETTER_ERROR = -2
 DOKAN_DRIVER_INSTALL_ERROR = -3
 DOKAN_START_ERROR = -4
 DOKAN_MOUNT_ERROR = -5
+DOKAN_MOUNT_POINT_ERROR = -6
+DOKAN_VERSION_ERROR = -7
 
 # Misc windows constants
 FILE_LIST_DIRECTORY = 0x01
@@ -917,7 +919,7 @@ def mount(fs, drive, foreground=False, ready_callback=None, unmount_callback=Non
         numthreads = kwds.pop("numthreads",0)
         flags = kwds.pop("flags",0)
         FSOperationsClass = kwds.pop("FSOperationsClass",FSOperations)
-        opts = libdokan.DOKAN_OPTIONS(drive[:1], numthreads, flags)
+        opts = libdokan.DOKAN_OPTIONS(libdokan.DOKAN_MINIMUM_COMPATIBLE_VERSION, drive[:1], numthreads, flags, 0, 0)
         ops = FSOperationsClass(fs, **kwds)
         if ready_callback:
             check_thread = threading.Thread(target=check_ready)
