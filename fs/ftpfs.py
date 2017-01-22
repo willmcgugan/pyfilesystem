@@ -834,8 +834,8 @@ def ftperrors(f):
 
 
 def _encode(s):
-    if isinstance(s, unicode):
-        return s.encode('utf-8')
+    if six.PY3:
+        return six.u(s)
     return s
 
 class _DirCache(dict):
