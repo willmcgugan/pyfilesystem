@@ -958,7 +958,18 @@ class FTPFS(FS):
 
         def on_line(line):
             if not isinstance(line, unicode):
-                line = line.decode('utf-8')
+                for encoding in ["utf-8", "latin-1"]:
+                    decoded_line = None
+                    try:
+                        decoded_line = line.decode(encoding)
+                    except UnicodeDecodeError:
+                        pass
+                if decoded_line is None:
+                    raise Exception(
+                        "Unable to decode the line {}".format(line)
+                    )
+                line = decoded_line
+
             info = parse_ftp_list_line(line, self.use_mlst)
             if info:
                 info = info.__dict__
