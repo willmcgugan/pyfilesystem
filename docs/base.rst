@@ -28,7 +28,7 @@ fs.base.NullFile
 
 A NullFile is a file-like object with no functionality. It is used in situations where a file-like object is required but the caller doesn't have any data to read or write.
 
-The :meth:`~fs.base.FS.safeopen` method returns an NullFile instance, which can reduce error-handling code.
+The :meth:`~fs.base.FS.safeopen` method returns a NullFile instance, which can reduce error-handling code.
 
 For example, the following code may be written to append some text to a log file::
 

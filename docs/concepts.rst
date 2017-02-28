@@ -8,7 +8,7 @@ Sandboxing
 
 FS objects are not permitted to work with any files / directories outside of the Filesystem they represent. If you attempt to open a file or directory outside the root of the FS (e.g. by using "../" in the path) you will get a ``ValueError``.
 
-There is no concept of a current working directory in PyFilesystem, since it is a common source of bugs and not all filesystems even have such a notion. If you want to work with a sub-directory of a FS object, you can use the :meth:`~fs.base.FS.opendir` method which returns another FS object representing the sub-directory.
+There is no concept of a current working directory in PyFilesystem, since it is a common source of bugs and not all filesystems even have such a notion. If you want to work with a sub-directory of an FS object, you can use the :meth:`~fs.base.FS.opendir` method which returns another FS object representing the sub-directory.
 
 For example, consider the following directory structure. The directory `foo` contains two sub-directories; `bar` and `baz`::
 
@@ -78,7 +78,7 @@ If you call :meth:`~fs.base.FS.getsyspath` on such FS objects you will either ge
 Errors
 ------
 
-PyFilesystem converts all exceptions to a common type, so that you need only write your exception handling code once. For example, if you try to open a file that doesn't exist, PyFilesystem will throw a :class:`~fs.errors.ResourceNotFoundError` regardless of whether the filesystem is local, on a ftp server or in a zip file::
+PyFilesystem converts all exceptions to a common type, so that you need only write your exception handling code once. For example, if you try to open a file that doesn't exist, PyFilesystem will throw a :class:`~fs.errors.ResourceNotFoundError` regardless of whether the filesystem is local, on an ftp server or in a zip file::
 
 	>>> from fs.osfs import OSFS
 	>>> root_fs = OSFS('/')
