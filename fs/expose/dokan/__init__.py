@@ -812,17 +812,6 @@ class FSOperations(object):
 
     @handle_fs_errors
     def GetFileSecurity(self, path, securityinformation, securitydescriptor, securitydescriptorlength, neededlength, info):
-        securitydescriptor = ctypes.cast(securitydescriptor, libdokan.PSECURITY_DESCRIPTOR)
-        path = self._dokanpath2pyfs(path)
-        if self.fs.isdir(path):
-            res = libdokan.GetFileSecurity(
-                self.securityfolder,
-                ctypes.cast(securityinformation, libdokan.PSECURITY_INFORMATION)[0],
-                securitydescriptor,
-                securitydescriptorlength,
-                neededlength,
-            )
-            return STATUS_SUCCESS if res else STATUS_BUFFER_OVERFLOW
         return STATUS_NOT_IMPLEMENTED
 
     @handle_fs_errors
