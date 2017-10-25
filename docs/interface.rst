@@ -34,7 +34,7 @@ The following methods are available in all PyFilesystem implementation:
 	* :meth:`~fs.base.FS.move` Move a file to a new location
 	* :meth:`~fs.base.FS.movedir` Recursively move a directory to a new location
 	* :meth:`~fs.base.FS.open` Opens a file for read/writing
-	* :meth:`~fs.base.FS.opendir` Opens a directory and returns a FS object that represents it
+	* :meth:`~fs.base.FS.opendir` Opens a directory and returns an FS object that represents it
 	* :meth:`~fs.base.FS.remove` Remove an existing file
 	* :meth:`~fs.base.FS.removedir` Remove an existing directory
 	* :meth:`~fs.base.FS.rename` Atomically rename a file or directory
