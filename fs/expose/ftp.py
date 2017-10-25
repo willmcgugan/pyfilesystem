@@ -21,7 +21,10 @@ import time
 import errno
 from functools import wraps
 
-from pyftpdlib import ftpserver
+from pyftpdlib.authorizers import DummyAuthorizer
+from pyftpdlib.filesystems import AbstractedFS
+from pyftpdlib.handlers import FTPHandler
+from pyftpdlib.servers import FTPServer
 
 from fs.path import *
 from fs.osfs import OSFS
@@ -70,7 +73,7 @@ class FakeStat(object):
             setattr(self, attr, value)
 
 
-class FTPFS(ftpserver.AbstractedFS):
+class FTPFS(AbstractedFS):
     """
     The basic FTP Filesystem. This is a bridge between a pyfs filesystem and pyftpdlib's
     AbstractedFS. This class will cause the FTP server to serve the given fs instance.
@@ -232,7 +235,7 @@ class FTPFS(ftpserver.AbstractedFS):
         return True
 
 
-class FTPFSHandler(ftpserver.FTPHandler):
+class FTPFSHandler(FTPHandler):
     """
     An FTPHandler class that closes the filesystem when done.
     """
@@ -283,10 +286,9 @@ def serve_fs(fs, addr, port):
     Creates a basic anonymous FTP server serving the given FS on the given address/port
     combo.
     """
-    from pyftpdlib.contrib.authorizers import UnixAuthorizer
     ftp_handler = FTPFSHandler
-    ftp_handler.authorizer = ftpserver.DummyAuthorizer()
+    ftp_handler.authorizer = DummyAuthorizer()
     ftp_handler.authorizer.add_anonymous('/')
     ftp_handler.abstracted_fs = FTPFSFactory(fs)
-    s = ftpserver.FTPServer((addr, port), ftp_handler)
+    s = FTPServer((addr, port), ftp_handler)
     s.serve_forever()
