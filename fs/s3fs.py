@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 """
 fs.s3fs
 =======
@@ -113,8 +114,6 @@ class S3FS(FS):
             prefix = prefix[1:]
         if not prefix.endswith(separator) and prefix != "":
             prefix = prefix + separator
-        if isinstance(prefix,unicode):
-            prefix = prefix.encode("utf8")
         self._prefix = prefix
         self._tlocal = thread_local()
         super(S3FS, self).__init__(thread_synchronize=thread_synchronize)
@@ -180,8 +179,6 @@ class S3FS(FS):
         s3path = self._prefix + path
         if s3path and s3path[-1] == self._separator:
             s3path = s3path[:-1]
-        if isinstance(s3path,unicode):
-            s3path = s3path.encode("utf8")
         return s3path
 
     def _uns3path(self,s3path,roots3path=None):
@@ -399,8 +396,6 @@ class S3FS(FS):
             # Skip over the entry for the directory itself, if it exists
             name = self._uns3path(k.name,s3path)
             if name != "":
-                if not isinstance(name,unicode):
-                    name = name.decode("utf8")
                 if name.endswith(self._separator):
                     name = name[:-1]
                 yield (name,k)
@@ -580,12 +575,13 @@ class S3FS(FS):
             info['size'] = int(key.size)
         etag = getattr(key,"etag",None)
         if etag is not None:
-            if isinstance(etag,unicode):
-               etag = etag.encode("utf8")
             info['etag'] = etag.strip('"').strip("'")
         if hasattr(key,"last_modified"):
             # TODO: does S3 use any other formats?
-            fmt = "%a, %d %b %Y %H:%M:%S %Z"
+            if '-' in key.last_modified:
+                fmt = "%Y-%m-%dT%H:%M:%S.%fZ"
+            else:
+                fmt = "%a, %d %b %Y %H:%M:%S %Z"
             try:
                 mtime = datetime.datetime.strptime(key.last_modified,fmt)
                 info['modified_time'] = mtime
@@ -664,8 +660,6 @@ class S3FS(FS):
             for k in self._s3bukt.list(prefix=prefix):
                 name = relpath(self._uns3path(k.name,prefix))
                 if name != "":
-                    if not isinstance(name,unicode):
-                        name = name.decode("utf8")
                     if not k.name.endswith(self._separator):
                         if wildcard is not None:
                             if callable(wildcard):
@@ -692,8 +686,6 @@ class S3FS(FS):
             for k in self._s3bukt.list(prefix=prefix):
                 name = relpath(self._uns3path(k.name,prefix))
                 if name != "":
-                    if not isinstance(name,unicode):
-                        name = name.decode("utf8")
                     if wildcard is not None:
                         if callable(wildcard):
                             if not wildcard(basename(name)):
@@ -719,8 +711,6 @@ class S3FS(FS):
             for k in self._s3bukt.list(prefix=prefix):
                 name = relpath(self._uns3path(k.name,prefix))
                 if name != "":
-                    if not isinstance(name,unicode):
-                        name = name.decode("utf8")
                     if not k.name.endswith(self._separator):
                         if wildcard is not None:
                             if callable(wildcard):
