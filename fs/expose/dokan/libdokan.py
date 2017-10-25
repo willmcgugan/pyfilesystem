@@ -272,13 +272,3 @@ DokanResetTimeout.argtypes = (
     ULONG,  #timeout
     PDOKAN_FILE_INFO,  # file info pointer
 )
-
-GetFileSecurity = windll.advapi32.GetFileSecurityW
-GetFileSecurity.restype = BOOL
-GetFileSecurity.argtypes = (
-    LPWSTR,                     # _In_ LPCTSTR lpFileName,
-    SECURITY_INFORMATION,       # _In_ SECURITY_INFORMATION RequestedInformation,
-    PSECURITY_DESCRIPTOR,       # _Out_opt_ PSECURITY_DESCRIPTOR pSecurityDescriptor,
-    DWORD,                      # _In_ DWORD nLength,
-    LPDWORD,                    # _Out_ LPDWORD lpnLengthNeeded
-)
