@@ -14,10 +14,10 @@ Or to upgrade to the most recent version::
 
 	pip install fs --upgrade
 
-You can also install the cutting edge release by checking out the source via SVN::
+You can also install the cutting edge release by cloning the source from GIT::
 
-    svn checkout http://pyfilesystem.googlecode.com/svn/trunk/ pyfilesystem-read-only
-    cd pyfilesystem-read-only
+    git clone https://github.com/PyFilesystem/pyfilesystem.git
+    cd pyfilesystem
     python setup.py install
 
 Whichever method you use, you should now have the `fs` module on your path (version number may vary)::
@@ -41,9 +41,9 @@ Prerequisites
 
 PyFilesystem requires at least **Python 2.6**. There are a few other dependencies if you want to use some of the more advanced filesystem interfaces, but for basic use all that is needed is the Python standard library.
 
-    * Boto (required for :mod:`fs.s3fs`) http://code.google.com/p/boto/
-    * Paramiko (required for :class:`fs.ftpfs.FTPFS`) http://www.lag.net/paramiko/
-    * wxPython (required for :mod:`fs.browsewin`) http://www.wxpython.org/
+    * Boto (required for :mod:`~fs.s3fs`) https://github.com/boto/boto
+    * Paramiko (required for :mod:`~fs.sftpfs`) https://github.com/paramiko/paramiko
+    * wxPython (required for :mod:`~fs.browsewin`) http://www.wxpython.org/
 
 
 Quick Examples

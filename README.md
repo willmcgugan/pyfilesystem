@@ -1,11 +1,13 @@
 PyFilesystem
 ============
 
+**Note:** The project has largely been replaced by [PyFilesystem2](https://github.com/PyFilesystem/pyfilesystem2) which offers many improvements over the original.
+
 PyFilesystem is an abstraction layer for *filesystems*. In the same way that Python's file-like objects provide a common way of accessing files, PyFilesystem provides a common way of accessing entire filesystems. You can write platform-independent code to work with local files, that also works with any of the supported filesystems (zip, ftp, S3 etc.).
 
 Pyfilesystem works with Linux, Windows and Mac.
 
-Suported Filesystems
+Supported Filesystems
 ---------------------
 
 Here are a few of the filesystems that can be accessed with Pyfilesystem:
@@ -16,7 +18,7 @@ Here are a few of the filesystems that can be accessed with Pyfilesystem:
 * **MountFS** creates a virtual directory structure built from other filesystems
 * **MultiFS** a virtual filesystem that combines a list of filesystems into one, and checks them in order when opening files
 * **OSFS** the native filesystem
-* **SFTPFS** access files & directores stored on a Secure FTP server
+* **SFTPFS** access files & directories stored on a Secure FTP server
 * **S3FS** access files & directories stored on Amazon S3 storage
 * **TahoeLAFS** access files & directories stored on a Tahoe distributed filesystem
 * **ZipFS** access files and directories contained in a zip file
@@ -48,6 +50,11 @@ An alternative to explicitly importing the filesystem class you want, is to use 
     projects_fs = fsopendir('C:/projects')
 
 You could change ``C:/projects`` to ``zip://source.zip`` to open the zip file, or even ``ftp://ftp.example.org/code/projects/`` to sum up the bytes of Python stored on an ftp server.
+
+Documentation
+-------------
+
+http://pyfilesystem.readthedocs.org
 
 Screencast
 ----------
