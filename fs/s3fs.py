@@ -112,12 +112,6 @@ class S3FS(FS):
             prefix = prefix[1:]
         if not prefix.endswith(separator) and prefix != "":
             prefix = prefix + separator
-        if aws_access_key is None:
-            if "AWS_ACCESS_KEY_ID" not in os.environ:
-                raise CreateFailedError("AWS_ACCESS_KEY_ID not set")
-        if aws_secret_key is None:
-            if "AWS_SECRET_ACCESS_KEY" not in os.environ:
-                raise CreateFailedError("AWS_SECRET_ACCESS_KEY not set")
         self._prefix = prefix
         self._tlocal = thread_local()
         super(S3FS, self).__init__(thread_synchronize=thread_synchronize)
